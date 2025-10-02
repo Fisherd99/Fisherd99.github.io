@@ -28,3 +28,30 @@
 .VPDoc.has-aside .content-container {
     max-width: 1168px !important;
 }
+/* doc 页 Hero */
+.doc-hero {
+    margin: 32px 0 24px;
+    text-align: left;
+    padding: 24px 16px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, var(--vp-c-bg-soft), transparent 80%);
+}
+.doc-hero .name {
+    font-size: 50px;
+    line-height: 1.15;
+    font-weight: 800;
+    margin: 0 0 8px;
+    background: linear-gradient(90deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.doc-hero .tagline {
+    font-size: 20px;
+    color: var(--vp-c-text-2);
+    margin: 0;
+}
+@media (max-width: 640px) {
+    .doc-hero .name { font-size: 32px; }
+    .doc-hero .tagline { font-size: 16px; }
+}
