@@ -3,7 +3,7 @@ import markdownItAnchor from 'markdown-it-anchor'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  srcDir: "../md",
+  srcDir: "./md",
   base: "/",
   lang: "zh-CN",
   title: "卷心菜农场 —— Fisherd's blog",
