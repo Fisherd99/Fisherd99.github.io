@@ -16,12 +16,12 @@ hero:
 > 右键→另存为 可以保存原分辨率
 
 220616_国科大全景图
-![220616_国科大全景图](220616_ucas.jpg)
+![220616_国科大全景图](/images/220616_ucas.jpg)
 221004_香山眺望北四环
-![221004_香山眺望北四环](221004_xiangshan.jpg)
+![221004_香山眺望北四环](/images/221004_xiangshan.jpg)
 230919_青龙峡
-![230919_青龙峡](230919_qinglongxia.jpg)
+![230919_青龙峡](/images/230319_qinglongxia.jpg)
 250903_月食_间隔3分
-![250903_月食_间隔3分](250903_lunar_eclipse_3min.jpg)
+![250903_月食_间隔3分](/images/250903_lunar_eclipse_3min.jpg)
 250903_月食_间隔30s
-![250903_月食_间隔30s](250903_lunar_eclipse_30s.jpg)
+![250903_月食_间隔30s](/images/250903_lunar_eclipse_30s.jpg)
