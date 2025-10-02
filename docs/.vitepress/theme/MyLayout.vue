@@ -1,8 +1,11 @@
 <script setup>
 import DefaultTheme from 'vitepress/theme'
 import Giscus from "@giscus/vue";
+import { useData } from "vitepress";
 
-const { Layout } = DefaultTheme
+const { isDark, page } = useData();
+const { Layout } = DefaultTheme;
+
 </script>
 
 <template>
@@ -23,7 +26,7 @@ const { Layout } = DefaultTheme
           reactions-enabled="1"
           emit-metadata="0"
           input-position="top"
-          theme="preferred_color_scheme"
+          :theme="isDark ? 'dark' : 'light'"
           lang="zh-CN"
         />
       </div>
