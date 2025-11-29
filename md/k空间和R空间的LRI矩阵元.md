@@ -190,12 +190,12 @@ $$\begin{aligned}
 &\phi_{s}^{k+q^{*}}(r)\phi_{t}^{k}(r) =\sum_{R_{s}R_{t}}\phi_{s}(r-R_{s}-\boldsymbol{\tau}_{s})\phi_{t}(r-R_{t}-\boldsymbol{\tau}_{t})\mathrm{e}^{i[kR_{t}-(k+q)R_{s}]} \\
 &=\sum_{R_{s}R_{t}}\sum_{\mu\in S}C_{s(R_{s}),t(R_{t})}^{\mu(R_{s})}e^{i[kR_{t}-(k+q)R_{s}]}P_{\mu}(r-R_{s}-\tau_{s}) + \sum_{R_{s}R_{t}}\sum_{\mu\in T}C_{s(R_{s}),t(R_{t})}^{\mu(R_{t})}e^{i[kR_{t}-(k+q)R_{s}]}P_{\mu}(r-R_{t}-\tau_{t}) \\
 &=\sum_{R_{s}R_{t}}\sum_{\mu\in S}C_{s(0),t(R_{t}-R_{s})}^{\mu(0)}\mathrm{e}^{i[kR_{t}-(k+q)R_{s}]}\frac{1}{N_{k}}\sum_{k^{\prime}}P_{\mu}^{k^{\prime}}(r)\mathrm{e}^{-ik^{\prime}R_{s}} + \sum_{R_{s}R_{t}}\sum_{\mu\in T}C_{t(0),s(R_{s}-R_{t})}^{\mu(0)}\mathrm{e}^{i[kR_{t}-(k+q)R_{s}]}\frac{1}{N_{k}}\sum_{k^{\prime}}P_{\mu}^{k^{\prime}}(r)\mathrm{e}^{-ik^{\prime}R_{t}} \\
-&=\sum_{R_s R_{t}}\sum_{\mu\in S}C_{s(0),t(R_{t}-R_{s})}^{\mu(0)}\mathrm{e}^{ik(R_{t}-R_{s})}\frac{1}{N_{k}}\sum_{k^{\prime}}P_{\mu}^{k^{\prime}}(r)\mathrm{e}^{-i(q+k^{\prime})R_{s}} +\sum_{R_s R_{t}}\sum_{\mu\in T}C_{s(R_{s}-R_{t}),\beta(0)}^{\mu(0)}\mathrm{e}^{s(k+q)(R_{t}-R_{s})}\frac{1}{N_{k}}\sum_{k^{\prime}}P_{\mu}^{k^{\prime}}(r)\mathrm{e}^{-i(q+k^{\prime})R_{t}} \\
+&=\sum_{R_s R_{t}}\sum_{\mu\in S}C_{s(0),t(R_{t}-R_{s})}^{\mu(0)}\mathrm{e}^{ik(R_{t}-R_{s})}\frac{1}{N_{k}}\sum_{k^{\prime}}P_{\mu}^{k^{\prime}}(r)\mathrm{e}^{-i(q+k^{\prime})R_{s}} +\sum_{R_s R_{t}}\sum_{\mu\in T}C_{s(R_{s}-R_{t}),t(0)}^{\mu(0)}\mathrm{e}^{s(k+q)(R_{t}-R_{s})}\frac{1}{N_{k}}\sum_{k^{\prime}}P_{\mu}^{k^{\prime}}(r)\mathrm{e}^{-i(q+k^{\prime})R_{t}} \\
 ^{\text{第一项}R_t\leftrightarrow R_t^{\prime}+R_s}_{\text{第二项}R_s\leftrightarrow R_s^{\prime}+R_t} &=\sum_{\mu\in S}\boxed{\sum_{R_{t}^{\prime}}C_{s(0),t(R_{t}^{\prime})}^{\mu(0)}e^{ikR_{t}^{\prime}}}\frac{1}{N_{k}}\sum_{R_sk^{\prime}}P_{\mu}^{k^{\prime}}(r)\mathrm{e}^{-i(q+k^{\prime})R_{s}}+\sum_{\mu\in T}\boxed{\sum_{R_{s}^{\prime}}C_{t(0),s(R_{s}^{\prime})}^{\mu(0)}e^{-i(k+q)R_{s}^{\prime}}}\frac{1}{N_{k}}\sum_{R_tk^{\prime}}P_{\mu}^{k^{\prime}}(r)\mathrm{e}^{-i(q+k^{\prime})R_{t}} \\
 &=\left[\sum_{\mu\in S}C_{s,t}^{\mu}(k)+\sum_{\mu\in T}C_{t,s}^{\mu}(-k-q) \right]P_{\mu}^{q*}(r)
 \end{aligned} \tag{1}$$
 其中定义了C的傅里叶变换
-$$C_{i,j}^{\mu}(k)\equiv\sum_{R}C_{j(0),i(R)}^{\mu(0)}\mathrm{e}^{ikR}$$
+$$C_{st}^{\mu}(\boldsymbol{ k })\equiv\sum_{R}C_{s(0),t(\boldsymbol{ R })}^{\mu(0)}\mathrm{e}^{i\boldsymbol{ k }\cdot \boldsymbol{ R }}$$
 这里R的范围可以超过一个BvK超胞，镜像超胞对应的Bloch相位相同，幅值叠加。
 
 ### 2.3 c（abij标记分子轨道）
@@ -203,13 +203,18 @@ $$C_{i,j}^{\mu}(k)\equiv\sum_{R}C_{j(0),i(R)}^{\mu(0)}\mathrm{e}^{ikR}$$
 关于c系数，分子轨道有Bloch表象和Wannier表象
 
 $$\begin{aligned}
-\psi_{a}^{k}(r)& =\sum_{s}\phi_{s}^{k}(r)c_{sa}^{k}=\sum_{s}c_{sa}^{k}\sum_{R^{\prime}}\phi_{s}(r-R^{\prime}-\tau_{s})\mathrm{e}^{ikR'}\equiv\sum_{R}\psi_{a}^{R}(r)\mathrm{e}^{ikR} \\
+\psi_{a}^{k}(r)& =\sum_{s}\phi_{s}^{k}(r)c_{sa}^{k}=\sum_{s}c_{sa}^{k}\sum_{R^{\prime}}\phi_{s}(r-R^{\prime}-\tau_{s})\mathrm{e}^{ikR'}\equiv\sum_{R}\psi_{a}^{R}(r)\mathrm{e}^{ikR}
+\end{aligned}
+$$
+$$
+\begin{aligned}
 \psi_a^{R}(r)& \equiv\frac{1}{N_{k}}\sum_{k}\psi_{a}^{k}(r)\mathrm{e}^{-ikR}=\frac{1}{N_{k}}\sum_{k}\sum_{s}\boxed{c_{sa}^{k}\mathrm{e}^{-ikR}}\sum_{R^{\prime}}\phi_{s}(r-R^{\prime}-\tau_{s})\boxed{\mathrm{e}^{ikR^{\prime}}} \\
-_{R^{\prime}\leftrightarrow R+R''}& =\sum_{s}\sum_{R''}\boxed{\frac{1}{N_{k}}\sum_{k}c_{sa}^{k}\mathrm{e}^{ikR''}} \phi_{s}(r-R-R^{\prime\prime}-\tau_s) \\
-&=\sum_{sR''}c_{sa}^{-R''}\phi_{s}(r-R-R''-\tau_{s})=\sum_{sR''}c_{sa}^{R''}\phi_{s}(r-R+R^{\prime\prime}-\tau_{s})\textbf{【}c\text{和}\phi\text{的}R^{\prime\prime}\text{指标卷积求和】}
+& =\sum_{s}\sum_{R_s}\boxed{\frac{1}{N_{k}}\sum_{k}c_{sa}^{k}\mathrm{e}^{-ik(R-R_s)}} \phi_{s}(r-R_s-\tau_s) \\
+&=\sum_{sR_s}c_{sa}(R-R_s)\phi_{s}(r-R_s-\tau_{s})\textbf{【}c\text{和}\phi\text{的}R^{\prime\prime}\text{指标卷积求和】}\\
+&=\sum_{sR''}c_{sa}(R'')\phi_{s}(r-R+R^{\prime\prime}-\tau_{s})
 \end{aligned}$$
 其中定义了
-$$c_{j,a}^{k}\equiv\sum_{R}c_{j,a}^{R}\mathrm{e}^{ikR},\quad c_{j,a}^{R}=\frac{1}{N_{k}}\sum_{k}c_{j,a}^{k}\mathrm{e}^{-ikR}$$
+$$c_{sa}^{k}\equiv\sum_{R}c_{sa}^{R}\mathrm{e}^{ikR},\quad c_{sa}^{R}=\frac{1}{N_{k}}\sum_{k}c_{sa}^{k}\mathrm{e}^{-ikR}$$
 上面的k指标的分子轨道具有布洛赫波函数的形式，下面的R指标分子轨道具有Wannier波函数的形式，其以R所处的原胞为中心。
 
 Bloch波矢和能量对易，它是一个好量子数，所以分子轨道中只有相同k指标的原子Bloch基做线性组合。Wannier轨道则不具有这一点，所以分子轨道中包含对不同R指标的Wannier基做线性组合。
@@ -220,10 +225,10 @@ Bloch波矢和能量对易，它是一个好量子数，所以分子轨道中只
 $$\begin{aligned}
 H_{st}^{exx}(R) =&\frac{1}{N_{k}}\sum_{ik_{2}}\iint\mathrm{d}r\mathrm{d}r^{\prime}\frac{\phi_{s}^{*}(r)\psi_{i}^{k_{2}}(r)\psi_{i}^{k_{2}*}(r^{\prime})\phi_{t}(r^{\prime}-R)}{|r-r^{\prime}|}  \\
 =&\frac{1}{N_{k}}\sum_{ik_{2}uv}\sum_{R_{u}R_{v}}\iint\mathrm{d}r\mathrm{d}r^{\prime}\frac{\phi_{s}(r)\phi_{u}(r-R_{u})\mathrm{e}^{ik_{2}R_{u}}\phi_{v}(r^{\prime}-R_{v})\mathrm{e}^{-ik_{2}R_{v}}\phi_{t}(r^{\prime}-R)}{|r-r^{\prime}|}c_{ui}^{k_{2}}c_{vi}^{k_{2}*} \\
-=&\sum_{uvR_{u}R_{u}}\iint\mathrm{d}r\mathrm{d}r^{\prime}\biggl[\sum_{\mu\in S}C_{s(0)u(R_{u})}^{\mu(0)}P_{\mu}(r-\tau_{s})+\sum_{\mu\in U}C_{u(0)s(-R_{u})}^{\mu(0)}P_{\mu}(r-R_{u}-\tau_{u})\biggr]\frac{1}{|r-r^{\prime}|} \\
-&\left[\sum_{\nu\in V}C_{\nu(0)t(R-R_{\nu})}^{\nu(0)}P_{\nu}(r^{\prime}-R_{v}-\tau_{\nu})+\sum_{\nu\in T} C_{t(0)v(R_{\nu}-R)}^{\nu(0)}P_{\nu}(r^{\prime}-R_{t}-\tau_{t})\right]\frac{1}{N_{k}}\sum_{ik_{2}}c_{ui}^{k_{2}}c_{vi}^{k_{2}*}\mathrm{e}^{-ik_{2}(R_{v}-R_{u})} \\
-=&\sum_{uvR_{u}R_{v}}\left[\sum_{\mu\in S,\nu\in V}C_{s(0)u(R_{u})}^{\mu(0)}V_{\mu\nu}(R_{v}) C_{v(0)t(R-R_{v})}^{\nu(0)}+\sum_{\mu\in S,\nu\in T}C_{s(0)u(R_{u})}^{\mu(0)}V_{\mu\nu}(R_{t})C_{t(0)v(R_{v}-R)}^{\nu(0)}\right] \\
-&+\sum_{\mu\in U,\nu\in V}C_{u(0)s(-R_{u})}^{\mu(0)}V_{\mu\nu}(R_{v}-R_{u})C_{v(0)t(R-R_{v})}^{\nu(0)}+ \sum_{\mu\in U,\nu\in T}C_{u(0)s(-R_{u})}^{\mu(0)}V_{\mu\nu}(R_{t}-R_{v})C_{t(0)v(R_{v}-R)}^{\nu(0)}\biggr]D_{uv}(R_{v}-R_{u})
+=&\sum_{uvR_{u}R_{v}}\iint\mathrm{d}r\mathrm{d}r^{\prime}\biggl[\sum_{\mu\in S}C_{s(0)u(R_{u})}^{\mu(0)}P_{\mu}(r-\tau_{s})+\sum_{\mu\in U}C_{u(0)s(-R_{u})}^{\mu(0)}P_{\mu}(r-R_{u}-\tau_{u})\biggr]\frac{1}{|r-r^{\prime}|} \\
+&\left[\sum_{\nu\in V}C_{\nu(0)t(R-R_{\nu})}^{\nu(0)}P_{\nu}(r^{\prime}-R_{v}-\tau_{\nu})+\sum_{\nu\in T} C_{t(0)v(R_{\nu}-R)}^{\nu(0)}P_{\nu}(r^{\prime}-R-\tau_{t})\right]\frac{1}{N_{k}}\sum_{ik_{2}}c_{ui}^{k_{2}}c_{vi}^{k_{2}*}\mathrm{e}^{-ik_{2}(R_{v}-R_{u})} \\
+=&\sum_{uvR_{u}R_{v}}\left[\sum_{\mu\in S,\nu\in V}C_{s(0)u(R_{u})}^{\mu(0)}V_{\mu\nu}(R_{v}) C_{v(0)t(R-R_{v})}^{\nu(0)}+\sum_{\mu\in S,\nu\in T}C_{s(0)u(R_{u})}^{\mu(0)}V_{\mu\nu}(R)C_{t(0)v(R_{v}-R)}^{\nu(0)}\right] \\
+&+\sum_{\mu\in U,\nu\in V}C_{u(0)s(-R_{u})}^{\mu(0)}V_{\mu\nu}(R_{v}-R_{u})C_{v(0)t(R-R_{v})}^{\nu(0)}+ \sum_{\mu\in U,\nu\in T}C_{u(0)s(-R_{u})}^{\mu(0)}V_{\mu\nu}(R-R_{v})C_{t(0)v(R_{v}-R)}^{\nu(0)}\biggr]D_{uv}(R_{v}-R_{u})
 \end{aligned}$$
 Ru和Rv原则上是可以超出BvK的，不过由于最终H(R)要变换到k空间，镜像原胞的Ru和Rv对H(k)的贡献是等价的，所以总可以先将C和V折叠到BvK中，再做张量缩并。另外，C和V在R空间下具有稀疏性，可加速计算。
 
@@ -291,8 +296,9 @@ $$\begin{aligned}
 (a^{*}\mathbf{k}_{1},i\mathbf{k}_{1}|V|j^{*}\mathbf{k}_{2},b\mathbf{k}_{2}) =&\frac{1}{N_{k}^{2}}\iint\mathrm{d}\mathbf{r}\mathrm{d}\mathbf{r}^{\prime}\psi_{a\mathrm{k}_{1}}^{*}(\mathbf{r})\psi_{i\mathbf{k}_{1}}(\mathbf{r})V(\mathbf{r},\mathbf{r}^{\prime})\psi_{j\mathbf{k}_{2}}^{*}(\mathbf{r}^{\prime})\psi_{b\mathbf{k}_{2}}(\mathbf{r}^{\prime})  \\
 =&\frac{1}{N_{k}^{2}}\iint\mathrm{d}\mathbf{r}\mathrm{d}\mathbf{r}^{\prime}\sum_{stuv}c_{ua}^{k_{1}*}c_{si}^{k_{1}}c_{tj}^{k_{2}*}c_{vb}^{k_{2}}\sum_{\mathbf{R}_{s}\mathbf{R}_{t}\mathbf{R}_{u}\mathbf{R}_{v}}\exp[i\mathbf{k}_{1}(\mathbf{R}_{s}-\mathbf{R}_{u})-i\mathbf{k}_{2}(\mathbf{R}_{t}-\mathbf{R}_{v})] \\
 &\phi_s(\mathbf{r}-\mathbf{R}_s-\tau_s)\phi_u(\mathbf{r}-\mathbf{R}_u-\tau_u) V(\mathbf{r},\mathbf{r}')\phi_t(\mathbf{r}^{\prime}-\mathbf{R}_t-\tau_t)\phi_v(\mathbf{r}^{\prime}-\mathbf{R}_v-\tau_v)\\
-\text{代入式}(1)=& \frac{1}{N_{k}^{2}}\iint\mathrm{d}\mathbf{r}\mathrm{d}\mathbf{r}^{\prime}\sum_{stuv}c_{uv}^{k_{1}*}c_{si}^{k_{2}}c_{tj}^{k_{2}*}c_{ub}^{k_{2}}\biggl[\sum_{\mu\in S}C_{s,u}^{\mu}(-\mathbf{k}_{1})P_{\mu}^{(q-0)}(\mathbf{r})+\sum_{\mu\in U}C_{u,s}^{\mu}(\mathbf{k}_{1})P_{\mu}^{(q-0)}(\mathbf{r})\biggr]  \\
-&V(\mathbf{r},\mathbf{r}^{\prime})\left[\sum_{\mu\in T}C_{t,v}^{\mu}(\mathbf{k}_{2})P_{\mu}^{(q=0)}(\mathbf{r}^{\prime})+\sum_{\mu\in V}C_{v,t}^{\mu}(-\mathbf{k}_{2})P_{\mu}^{(q=0)}(\mathbf{r}^{\prime})\right]
+\text{代入式}(1)=& \frac{1}{N_{k}^{2}}\iint\mathrm{d}\mathbf{r}\mathrm{d}\mathbf{r}^{\prime}\sum_{stuv}c_{ua}^{k_{1}*}c_{si}^{k_{1}}c_{tj}^{k_{2}*}c_{vb}^{k_{2}}\biggl[\sum_{\mu\in S}C_{s,u}^{\mu}(-\mathbf{k}_{1})P_{\mu}^{(q=0)}(\mathbf{r})+\sum_{\mu\in U}C_{u,s}^{\mu}(\mathbf{k}_{1})P_{\mu}^{(q=0)}(\mathbf{r})\biggr]  \\
+&V(\mathbf{r},\mathbf{r}^{\prime})\left[\sum_{\mu\in T}C_{t,v}^{\mu}(\mathbf{k}_{2})P_{\mu}^{(q=0)}(\mathbf{r}^{\prime})+\sum_{\mu\in V}C_{v,t}^{\mu}(-\mathbf{k}_{2})P_{\mu}^{(q=0)}(\mathbf{r}^{\prime})\right] \\
+=&\frac{1}{N_k}\sum_{\mu\nu}\sum_{stuv} c_{ua}^{k_{1}*}c_{si}^{k_{1}}\left[\sum_{S\in \mu}C_{s,u}^{\mu}(-\mathbf{k}_{1})+\sum_{U\in \mu} C_{u,s}^{\mu}(\mathbf{k}_{1})\right] W_{\mu\nu}(\mathbf{0})\left[\sum_{T\in \nu}C_{t,v}^{\mu}(\mathbf{k}_{2})+\sum_{V\in \nu}C_{v,t}^{\mu}(-\mathbf{k}_{2})\right]c_{tj}^{k_{2}*}c_{vb}^{k_{2}}
 \end{aligned}$$
 互换行列指标后，$i\leftrightarrow j,a\leftrightarrow b,k_1\leftrightarrow k_2$ ，对第二个式子做这样的替换可以快速得到
 $$(b^*\mathbf{k}_2,j\mathbf{k}_1|V|i\mathbf{k}_1,a\mathbf{k}_1)=\left[(a^*\mathbf{k}_1,i\mathbf{k}_1|V|j^*\mathbf{k}_2,b\mathbf{k}_2)\right]^*$$
@@ -301,11 +307,12 @@ W矩阵(direct term，电子同坐标，空穴同坐标)
 第aik1行第bjk2列是
 $$\begin{aligned}
 (j^{*}\mathbf{k}_{2},i\mathbf{k}_{1}|W|a^{*}\mathbf{k}_{1},b\mathbf{k}_{2})=& \frac{1}{N_{k}^{2}}\iint\mathrm{d}\mathbf{r}\mathrm{d}\mathbf{r}^{\prime}\psi_{j\mathbf{k}_{2}}^{*}(\mathbf{r})\psi_{i\mathbf{k}_{1}}(\mathbf{r})W(\mathbf{r},\mathbf{r}^{\prime})\psi_{a\mathbf{k}_{1}}^{*}(\mathbf{r}^{\prime})\psi_{b\mathbf{k}_{2}}(\mathbf{r}^{\prime}) \\
-=&\frac{1}{N_{k}^{2}}\iint\mathrm{d}\mathbf{r}\mathrm{d}\mathbf{r}^{\prime}\sum_{stav}c_{tj}^{k_{2}*}c_{si}^{k_{1}}c_{ua}^{k_{1}*}c_{vb}^{k_{2}}\sum_{\mathbf{R},\mathbf{R},\mathbf{R}_{v}}\exp[i\mathbf{k}_{1}(\mathbf{R}_{s}-\mathbf{R}_{u})-i\mathbf{k}_{2}(\mathbf{R}_{t}-\mathbf{R}_{v})]\\
+=&\frac{1}{N_{k}^{2}}\iint\mathrm{d}\mathbf{r}\mathrm{d}\mathbf{r}^{\prime}\sum_{stuv}c_{tj}^{k_{2}*}c_{si}^{k_{1}}c_{ua}^{k_{1}*}c_{vb}^{k_{2}}\sum_{\mathbf{R},\mathbf{R},\mathbf{R}_{v}}\exp[i\mathbf{k}_{1}(\mathbf{R}_{s}-\mathbf{R}_{u})-i\mathbf{k}_{2}(\mathbf{R}_{t}-\mathbf{R}_{v})]\\
 &\phi_s(\mathbf{r}-\mathbf{R}_s-\tau_s)\phi_t(\mathbf{r}-\mathbf{R}_t-\tau_t)W(\mathbf{r},\mathbf{r}^{\prime})\phi_u(\mathbf{r}^{\prime}-\mathbf{R}_u-\tau_u)\phi_v(\mathbf{r}^{\prime}-\mathbf{R}_v-\tau_v)\\
-\text{代入式}(1) = &\frac{1}{N_{k}^{2}}\iint\mathrm{d}\mathbf{r}\mathrm{d}\mathbf{r}^{\prime}\sum_{stav}c_{tj}^{k_{2}*}c_{si}^{k_{1}}c_{ua}^{k_{1}*}c_{vb}^{k_{2}}\left[\sum_{\mu\in S}C_{s,t}^{\mu}(-\mathbf{k}_{2})P_{\mu}^{(\mathbf{k}_{1}-\mathbf{k}_{2})}(\mathbf{r})+\sum_{\mu\in T}C_{t,s}^{\mu}(\mathbf{k}_{1})P_{\mu}^{(\mathbf{k}_{1}-\mathbf{k}_{2})}(\mathbf{r})\right] \\
-&W(\mathbf{r},\mathbf{r}^{\prime})\left[\sum_{\mu\in U}C_{u,v}^{\mu}(\mathbf{k}_{2})P_{\mu}^{(\mathbf{k}_{2}-\mathbf{k}_{1})}(\mathbf{r})+\sum_{\mu\in V}C_{v,u}^{\mu}(-\mathbf{k}_{1})P_{\mu}^{(\mathbf{k}_{2}-\mathbf{k}_{1})}(\mathbf{r})\right]
+\text{代入式}(1) = &\frac{1}{N_{k}^{2}}\iint\mathrm{d}\mathbf{r}\mathrm{d}\mathbf{r}^{\prime}\sum_{stuv}c_{tj}^{k_{2}*}c_{si}^{k_{1}}c_{ua}^{k_{1}*}c_{vb}^{k_{2}}\left[\sum_{\mu\in S}C_{s,t}^{\mu}(-\mathbf{k}_{2})P_{\mu}^{(\mathbf{k}_{1}-\mathbf{k}_{2})}(\mathbf{r})+\sum_{\mu\in T}C_{t,s}^{\mu}(\mathbf{k}_{1})P_{\mu}^{(\mathbf{k}_{1}-\mathbf{k}_{2})}(\mathbf{r})\right] \\
+&W(\mathbf{r},\mathbf{r}^{\prime})\left[\sum_{\mu\in U}C_{u,v}^{\mu}(\mathbf{k}_{2})P_{\mu}^{(\mathbf{k}_{2}-\mathbf{k}_{1})}(\mathbf{r})+\sum_{\mu\in V}C_{v,u}^{\mu}(-\mathbf{k}_{1})P_{\mu}^{(\mathbf{k}_{2}-\mathbf{k}_{1})}(\mathbf{r})\right] \\
+=&\frac{1}{N_k}\sum_{\mu\nu}\sum_{stuv} c_{tj}^{k_{2}*}c_{si}^{k_{1}}\left[\sum_{S\in \mu}C_{s,t}^{\mu}(-\mathbf{k}_{2})+\sum_{T\in \mu} C_{t,s}^{\mu}(\mathbf{k}_{1})\right] W_{\mu\nu}(\mathbf{k}_2 - \mathbf{k}_1)\left[\sum_{U\in \nu}C_{u,v}^{\mu}(\mathbf{k}_{2})+\sum_{V\in \nu}C_{v,u}^{\mu}(-\mathbf{k}_{1})\right]c_{ua}^{k_{1}*}c_{vb}^{k_{2}}
 \end{aligned}$$
 互换行列指标后，$i\leftrightarrow j,a\leftrightarrow b,k_1\leftrightarrow k_2$ ，对第二个式子做这样的替换可以快速得到
 $$(i^*\mathbf{k}_1,j\mathbf{k}_2|W|b^*\mathbf{k}_2,a\mathbf{k}_1)=[(j^*\mathbf{k}_2,i\mathbf{k}_1|W|a^*\mathbf{k}_1,b\mathbf{k}_2)]^*$$
-这时V，W，c和C都在k空间上，不具有稀疏性。预期在R空间中可以利用稀疏性进行筛选来加速计算。
+这时V，W，c和C都在k空间上，不具有稀疏性。但如果换到R空间，会多出三层卷积循环。程序实测也证实在k空间运算更快。
