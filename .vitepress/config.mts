@@ -50,6 +50,7 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: 'k空间和R空间的LRI矩阵元', link: '/k空间和R空间的LRI矩阵元' },
+          { text: 'BSE中full情形的对角化流程', link: '/beyond_tda流程' },
         ]
       },
       {
@@ -57,6 +58,7 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: '服务器备忘录', link: '/服务器备忘录' },
+          { text: 'gdb笔记', link: '/gdb' },
         ],
       }
     ],

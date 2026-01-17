@@ -22,9 +22,17 @@ features:
     details: 关于Local RI在各应用场景中的笔记
     link: /k空间和R空间的LRI矩阵元
     icon: 📖
+  - title: BSE中full情形的对角化流程
+    details: beyond tda
+    link: /beyond_tda流程
+    icon: 📖
   - title: 服务器备忘录
     details: 自己搭了一台服务器
     link: /服务器备忘录
+    icon: 🖥️
+  - title: gdb笔记
+    details: 调试C++程序的必备工具
+    link: /gdb
     icon: 🖥️
   - title: gpt_paper_assistant
     details: 用gpt整理近期的arxiv文章
