@@ -5,6 +5,9 @@ lang: en-US
 date: 2025-10-02
 author: "Fisherd"
 categories: 生活
+tags:
+  - 摄影
+  - 生活
 description: 个人摄影集
 editLink: true
 

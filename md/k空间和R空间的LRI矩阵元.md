@@ -4,6 +4,11 @@ lang: zh-CN
 date: 2025-10-02
 author: "Fisherd"
 categories: 物理
+tags:
+  - k点
+  - BSE
+  - 凝聚态物理
+  - LRI矩阵
 description: 关于k空间和R空间的变换关系，以及Local RI在两个表象下的变换关系
 ---
 

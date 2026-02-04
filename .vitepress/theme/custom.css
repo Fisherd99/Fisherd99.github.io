@@ -1,7 +1,87 @@
+/* ===================================
+   卷心菜农场 - Enhanced Design System
+   =================================== */
+
+/* CSS Custom Properties for Design Tokens */
+:root {
+  /* Primary Colors - Academic Blue */
+  --vp-c-brand-1: #3b82f6;
+  --vp-c-brand-2: #2563eb;
+  --vp-c-brand-3: #1d4ed8;
+
+  /* Accent Colors */
+  --c-accent-purple: #8b5cf6;
+  --c-accent-teal: #14b8a6;
+  --c-accent-orange: #f97316;
+
+  /* Background Colors */
+  --c-bg-soft: #f8fafc;
+  --c-bg-card: #ffffff;
+  --c-bg-card-hover: #f1f5f9;
+
+  /* Text Colors */
+  --c-text-primary: #0f172a;
+  --c-text-secondary: #475569;
+  --c-text-muted: #94a3b8;
+
+  /* Border Colors */
+  --c-border-light: #e2e8f0;
+  --c-border-medium: #cbd5e1;
+
+  /* Spacing Scale */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark Mode Overrides */
+.dark {
+  --c-bg-soft: #1e293b;
+  --c-bg-card: #0f172a;
+  --c-bg-card-hover: #1e293b;
+
+  --c-text-primary: #f1f5f9;
+  --c-text-secondary: #cbd5e1;
+  --c-text-muted: #64748b;
+
+  --c-border-light: #334155;
+  --c-border-medium: #475569;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.6);
+}
+
+/* ===================================
+   Existing Styles (Preserved)
+   =================================== */
+
 .vp-doc h1 {
     letter-spacing: -0.02em;
     line-height: 0px;
     font-size: 32px;
+    font-weight: 700;
   }
 
 .vp-doc h2 {
@@ -11,19 +91,22 @@
     letter-spacing: -0.02em;
     line-height: 32px;
     font-size: 24px;
-  }
+    font-weight: 600;
+}
+
 .medium-zoom-overlay {
     background-color: var(--vp-c-bg) !important;
     z-index: 100;
   }
-  
+
 .medium-zoom-overlay ~ img {
     z-index: 101;
   }
-  
+
 .medium-zoom--opened .medium-zoom-overlay {
     opacity: 0.9 !important;
-  }
+}
+
 :root {
     --vp-layout-max-width: 1920px;
 }
@@ -39,6 +122,7 @@
 .VPDoc.has-aside .content-container {
     max-width: 1168px !important;
 }
+
 /* doc 页 Hero */
 .doc-hero {
     margin: 32px 0 24px;
@@ -47,6 +131,7 @@
     border-radius: 12px;
     background: linear-gradient(180deg, var(--vp-c-bg-soft), transparent 80%);
 }
+
 .doc-hero .name {
     font-size: 50px;
     line-height: 1.15;
@@ -57,12 +142,411 @@
     background-clip: text;
     color: transparent;
 }
+
 .doc-hero .tagline {
     font-size: 20px;
     color: var(--vp-c-text-2);
     margin: 0;
 }
+
 @media (max-width: 640px) {
     .doc-hero .name { font-size: 32px; }
     .doc-hero .tagline { font-size: 16px; }
+}
+
+/* ===================================
+   Category Navigation Cards
+   =================================== */
+
+.category-nav-container {
+  margin: var(--spacing-2xl) 0;
+  padding: var(--spacing-lg);
+}
+
+.category-nav-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--c-text-primary);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.category-nav-title::before {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 1.5rem;
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--c-accent-purple));
+  border-radius: var(--radius-sm);
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.category-card {
+  background: var(--c-bg-card);
+  border: 1px solid var(--c-border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  display: block;
+}
+
+.category-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--card-color, var(--vp-c-brand-1)), var(--card-accent, var(--c-accent-purple)));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-base);
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--card-color, var(--vp-c-brand-1));
+  text-decoration: none;
+}
+
+.category-card:hover::before {
+  transform: scaleX(1);
+}
+
+.category-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.category-card-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-bg, rgba(59, 130, 246, 0.1));
+  border-radius: var(--radius-md);
+  color: var(--card-color, var(--vp-c-brand-1));
+  transition: all var(--transition-base);
+}
+
+.category-card:hover .category-card-icon {
+  transform: scale(1.1);
+  background: var(--card-color, var(--vp-c-brand-1));
+  color: white;
+}
+
+.category-card-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.category-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--c-text-primary);
+  margin: 0;
+}
+
+.category-card-count {
+  font-size: 0.875rem;
+  color: var(--c-text-muted);
+  margin-top: var(--spacing-xs);
+}
+
+.category-card-description {
+  font-size: 0.9375rem;
+  color: var(--c-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-md);
+}
+
+.category-card-articles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.article-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--c-bg-soft);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  color: var(--c-text-secondary);
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.article-tag:hover {
+  background: var(--card-color, var(--vp-c-brand-1));
+  color: white;
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+/* Category-specific colors */
+.category-card[data-category="physics"] {
+  --card-color: #3b82f6;
+  --card-accent: #8b5cf6;
+  --card-bg: rgba(59, 130, 246, 0.1);
+}
+
+.category-card[data-category="computer"] {
+  --card-color: #14b8a6;
+  --card-accent: #06b6d4;
+  --card-bg: rgba(20, 184, 166, 0.1);
+}
+
+.category-card[data-category="life"] {
+  --card-color: #f97316;
+  --card-accent: #fbbf24;
+  --card-bg: rgba(249, 115, 22, 0.1);
+}
+
+/* ===================================
+   Enhanced Content Typography
+   =================================== */
+
+.vp-doc p {
+  line-height: 1.75;
+  margin-bottom: var(--spacing-md);
+}
+
+.vp-doc a {
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.vp-doc a:hover {
+  color: var(--vp-c-brand-2);
+  text-decoration: underline;
+}
+
+/* ===================================
+   Code Block Enhancements
+   =================================== */
+
+.vp-doc div[class*='language-'] {
+  margin: var(--spacing-lg) 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===================================
+   Image Enhancements
+   =================================== */
+
+.vp-doc img {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-base);
+}
+
+.vp-doc img:hover {
+  transform: scale(1.02);
+}
+
+/* ===================================
+   Sidebar Enhancements
+   =================================== */
+
+.VPSidebar {
+  border-right: 1px solid var(--c-border-light);
+}
+
+/* ===================================
+   Navbar Enhancements
+   =================================== */
+
+.VPNav {
+  border-bottom: 1px solid var(--c-border-light);
+  backdrop-filter: blur(8px);
+}
+
+/* Desktop menu hover enhancement */
+@media (min-width: 960px) {
+  /* Auto-expand dropdown on hover */
+  .VPNavBarMenuGroup {
+    position: relative;
+  }
+
+  /* Add dropdown arrow indicator */
+  .VPNavBarMenuGroup .VPNavBarMenuGroup .VPNavBarMenuGroupButton {
+    transition: color var(--transition-fast);
+  }
+
+  .VPNavBarMenuGroup .VPNavBarMenuGroup .VPNavBarMenuGroupButton::after {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: var(--spacing-xs);
+    vertical-align: middle;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+    border-top: 3px solid currentColor;
+    transition: transform var(--transition-base);
+  }
+
+  .VPNavBarMenuGroup:hover .VPNavBarMenuGroupButton {
+    color: var(--vp-c-brand-1);
+  }
+
+  .VPNavBarMenuGroup:hover .VPNavBarMenuGroupButton::after {
+    transform: rotate(180deg);
+  }
+
+  /* Show dropdown menu on hover */
+  .VPNavBarMenuGroup:hover .VPNavBarMenuGroup .VPNavBarMenu {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+  }
+
+  /* Dropdown menu styling */
+  .VPNavBarMenuGroup .VPNavBarMenuGroup .VPNavBarMenu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 220px;
+    padding: var(--spacing-xs) 0;
+    background: var(--vp-c-bg);
+    border: 1px solid var(--c-border-light);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all var(--transition-base);
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  /* Dropdown item styling */
+  .VPNavBarMenuGroup .VPNavBarMenuGroup .VPNavBarMenu .VPNavBarMenuLink {
+    padding: var(--spacing-sm) var(--spacing-md);
+    transition: all var(--transition-fast);
+    color: var(--c-text-primary);
+    display: block;
+    white-space: nowrap;
+  }
+
+  .VPNavBarMenuGroup .VPNavBarMenuGroup .VPNavBarMenu .VPNavBarMenuLink:hover {
+    background: var(--c-bg-soft);
+    color: var(--vp-c-brand-1);
+  }
+
+  /* Regular menu link hover effect (non-dropdown) */
+  .VPNavBar .VPNavBarMenu > .VPNavBarMenuLink {
+    position: relative;
+    transition: color var(--transition-fast);
+    cursor: pointer;
+  }
+
+  .VPNavBar .VPNavBarMenu > .VPNavBarMenuLink:hover {
+    color: var(--vp-c-brand-1) !important;
+  }
+
+  .VPNavBar .VPNavBarMenu > .VPNavBarMenuLink::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 100%;
+    height: 2px;
+    background: var(--vp-c-brand-1);
+    transition: transform var(--transition-base);
+    transform-origin: center;
+  }
+
+  .VPNavBar .VPNavBarMenu > .VPNavBarMenuLink:hover::after {
+    transform: translateX(-50%) scaleX(1);
+  }
+}
+
+/* Mobile menu interactions */
+@media (max-width: 959px) {
+  .VPNavBarHamburger {
+    cursor: pointer;
+    transition: opacity var(--transition-fast);
+  }
+
+  .VPNavBarHamburger:hover {
+    opacity: 0.7;
+  }
+}
+
+/* Extra navbar items enhancement */
+.VPNavBarExtra {
+  transition: opacity var(--transition-fast);
+  cursor: pointer;
+}
+
+.VPNavBarExtra:hover {
+  opacity: 0.7;
+}
+
+
+/* ===================================
+   Responsive Design
+   =================================== */
+
+@media (max-width: 768px) {
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .category-nav-container {
+    padding: var(--spacing-md);
+  }
+
+  .category-card {
+    padding: var(--spacing-lg);
+  }
+}
+
+/* ===================================
+   Accessibility
+   =================================== */
+
+.category-card:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+}
+
+.article-tag:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

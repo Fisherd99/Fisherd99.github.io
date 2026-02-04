@@ -1,3 +1,17 @@
+---
+title: gdb笔记
+lang: zh-CN
+date: 2025-01-17
+author: "Fisherd"
+categories: 计算机
+tags:
+  - 调试
+  - C++
+  - 开发工具
+  - gdb
+description: 调试C++程序的必备工具使用指南
+---
+
 ## 安装
 IntelOneAPI中包含了gdb-oneapi命令，但是它依赖于GLIBC_2.25，一些老服务器并没有这么新的库，所以需要手动安装gdb。
 ##### 前置包：GMP4.2+，MPFR 3.1.0+

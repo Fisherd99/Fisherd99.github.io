@@ -1,0 +1,75 @@
+[
+  {
+    "title": "ABACUS+LibRPA运行BSE计算教程",
+    "link": "/ABACUS+LibRPA运行BSE计算教程",
+    "description": "方便新手快速上手",
+    "tags": [
+      "BSE",
+      "GW",
+      "凝聚态物理"
+    ],
+    "date": "2026-02-04",
+    "category": "物理"
+  },
+  {
+    "title": "k空间和R空间的LRI矩阵元",
+    "link": "/k空间和R空间的LRI矩阵元",
+    "description": "关于k空间和R空间的变换关系，以及Local RI在两个表象下的变换关系",
+    "tags": [
+      "k点",
+      "BSE",
+      "凝聚态物理",
+      "LRI矩阵"
+    ],
+    "date": "2025-10-02",
+    "category": "物理"
+  },
+  {
+    "title": "相册",
+    "link": "/photo_gallery",
+    "description": "个人摄影集",
+    "tags": [
+      "摄影",
+      "生活"
+    ],
+    "date": "2025-10-02",
+    "category": "生活"
+  },
+  {
+    "title": "服务器备忘录",
+    "link": "/服务器备忘录",
+    "description": "关于配置服务器的一些记录",
+    "tags": [
+      "服务器",
+      "Linux",
+      "系统配置"
+    ],
+    "date": "2025-10-02",
+    "category": "计算机"
+  },
+  {
+    "title": "gdb笔记",
+    "link": "/gdb",
+    "description": "调试C++程序的必备工具使用指南",
+    "tags": [
+      "调试",
+      "C++",
+      "开发工具",
+      "gdb"
+    ],
+    "date": "2025-01-17",
+    "category": "计算机"
+  },
+  {
+    "title": "BSE中full情形的对角化流程",
+    "link": "/beyond_tda流程",
+    "description": "BSE计算中超越TDA近似的方法",
+    "tags": [
+      "BSE",
+      "对角化",
+      "凝聚态物理"
+    ],
+    "date": "2025-01-15",
+    "category": "物理"
+  }
+]

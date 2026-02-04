@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
 import markdownItAnchor from 'markdown-it-anchor'
+import { navConfig, sidebarConfig } from './nav-config.js'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -37,31 +38,9 @@ export default defineConfig({
         timeStyle: 'medium'
       }
     },
-    nav: [
-      { text: 'Home', link: '/' },
-      { text: '物理', link: '/k空间和R空间的LRI矩阵元' },
-      { text: '计算机', link: '/服务器备忘录' },
-      { text: '生活', link: '/photo_gallery' }
-    ],
+    nav: navConfig,
 
-    sidebar: [
-      {
-        text: '物理',
-        collapsed: false,
-        items: [
-          { text: 'k空间和R空间的LRI矩阵元', link: '/k空间和R空间的LRI矩阵元' },
-          { text: 'BSE中full情形的对角化流程', link: '/beyond_tda流程' },
-        ]
-      },
-      {
-        text: '计算机',
-        collapsed: false,
-        items: [
-          { text: '服务器备忘录', link: '/服务器备忘录' },
-          { text: 'gdb笔记', link: '/gdb' },
-        ],
-      }
-    ],
+    sidebar: sidebarConfig,
 
     socialLinks: [
       { icon: 'github', link: 'https://github.com/Fisherd99' },
@@ -69,7 +48,7 @@ export default defineConfig({
     ],
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2025 Fisherd'
+      copyright: 'Copyright © 2025-2026 Fisherd'
     },
     editLink: {
       pattern: 'https://github.com/Fisherd99/Fisherd99.github.io/edit/master/md/:path'

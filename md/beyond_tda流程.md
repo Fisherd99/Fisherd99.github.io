@@ -1,3 +1,16 @@
+---
+title: BSE中full情形的对角化流程
+lang: zh-CN
+date: 2025-01-15
+author: "Fisherd"
+categories: 物理
+tags:
+  - BSE
+  - 对角化
+  - 凝聚态物理
+description: BSE计算中超越TDA近似的方法
+---
+
 本文是以下两篇文章的阅读笔记
 
 M. Shao, F. H. Da Jornada, C. Yang, J. Deslippe, and S. G. Louie, “Structure preserving parallel algorithms for solving the Bethe–Salpeter eigenvalue problem,” Linear Algebra and its Applications 488, 148–167 (2016)

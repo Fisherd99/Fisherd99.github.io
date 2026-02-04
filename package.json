@@ -2,11 +2,14 @@
   "name": "vitepress",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "docs:dev": "vitepress dev",
-    "docs:build": "vitepress build",
-    "docs:preview": "vitepress preview"
+    "docs:dev": "node generate-articles-list.js && node generate-nav-config.js && vitepress dev",
+    "docs:build": "node generate-articles-list.js && node generate-nav-config.js && vitepress build",
+    "docs:preview": "vitepress preview",
+    "generate-nav": "node generate-nav-config.js",
+    "generate-articles": "node generate-articles-list.js"
   },
   "keywords": [],
   "author": "",

@@ -1,17 +1,27 @@
 <script setup>
+import { computed } from 'vue'
 import DefaultTheme from 'vitepress/theme'
 import Giscus from "@giscus/vue";
+import HomeArticlesAuto from './HomeArticlesAuto.vue'
 import { useData } from "vitepress";
 
-const { isDark, page } = useData();
+const { isDark, page, frontmatter } = useData();
 const { Layout } = DefaultTheme;
 
+// 只在首页显示文章列表
+const showHomeArticles = computed(() => {
+  return page.value.frontmatter.layout === 'home'
+})
 </script>
 
 <template>
   <Layout>
     <template #aside-outline-before>
       导航
+    </template>
+
+    <template #home-hero-after>
+      <HomeArticlesAuto />
     </template>
 
     <template #doc-after>
