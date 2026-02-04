@@ -4,15 +4,16 @@
 
 /* CSS Custom Properties for Design Tokens */
 :root {
-  /* Primary Colors - Academic Blue */
-  --vp-c-brand-1: #3b82f6;
-  --vp-c-brand-2: #2563eb;
-  --vp-c-brand-3: #1d4ed8;
+  /* Primary Colors - Deep Purple for Light Mode */
+  --vp-c-brand-1: #7e22ce;  /* purple-700 */
+  --vp-c-brand-2: #6b21a8;  /* purple-800 */
+  --vp-c-brand-3: #581c87;  /* purple-900 */
 
   /* Accent Colors */
-  --c-accent-purple: #8b5cf6;
-  --c-accent-teal: #14b8a6;
-  --c-accent-orange: #f97316;
+  --c-accent-magenta: #d946ef;  /* fuchsia-500 */
+  --c-accent-violet: #8b5cf6;   /* violet-500 */
+  --c-accent-pink: #ec4899;     /* pink-500 */
+  --c-accent-indigo: #6366f1;   /* indigo-500 */
 
   /* Background Colors */
   --c-bg-soft: #f8fafc;
@@ -56,6 +57,17 @@
 
 /* Dark Mode Overrides */
 .dark {
+  /* Primary Colors - Softer but Visible Violet for Dark Mode */
+  --vp-c-brand-1: #a78bfa;  /* violet-400 - softer but visible */
+  --vp-c-brand-2: #8b5cf6;  /* violet-500 - good contrast */
+  --vp-c-brand-3: #7c3aed;  /* violet-600 */
+
+  /* Accent Colors - Lighter for dark backgrounds */
+  --c-accent-magenta: #e879f9;  /* fuchsia-400 */
+  --c-accent-violet: #a78bfa;   /* violet-400 */
+  --c-accent-pink: #f472b6;     /* pink-400 */
+  --c-accent-indigo: #818cf8;   /* indigo-400 */
+
   --c-bg-soft: #1e293b;
   --c-bg-card: #0f172a;
   --c-bg-card-hover: #1e293b;
@@ -137,7 +149,7 @@
     line-height: 1.15;
     font-weight: 800;
     margin: 0 0 8px;
-    background: linear-gradient(90deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+    background: linear-gradient(90deg, var(--vp-c-brand-1), var(--c-accent-violet));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -178,7 +190,7 @@
   display: block;
   width: 4px;
   height: 1.5rem;
-  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--c-accent-purple));
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--c-accent-violet));
   border-radius: var(--radius-sm);
 }
 
@@ -239,10 +251,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--card-bg, rgba(59, 130, 246, 0.1));
+  background: var(--card-bg, rgba(126, 34, 206, 0.12));
   border-radius: var(--radius-md);
   color: var(--card-color, var(--vp-c-brand-1));
   transition: all var(--transition-base);
+}
+
+.dark .category-card-icon {
+  background: var(--card-bg, rgba(167, 139, 250, 0.15));
 }
 
 .category-card:hover .category-card-icon {
@@ -302,23 +318,51 @@
   text-decoration: none;
 }
 
-/* Category-specific colors */
+/* Category-specific colors - Light Mode */
 .category-card[data-category="physics"] {
-  --card-color: #3b82f6;
-  --card-accent: #8b5cf6;
-  --card-bg: rgba(59, 130, 246, 0.1);
+  --card-color: #7e22ce;
+  --card-accent: #a855f7;
+  --card-bg: rgba(126, 34, 206, 0.12);
 }
 
 .category-card[data-category="computer"] {
-  --card-color: #14b8a6;
-  --card-accent: #06b6d4;
-  --card-bg: rgba(20, 184, 166, 0.1);
+  --card-color: #6d28d9;
+  --card-accent: #7c3aed;
+  --card-bg: rgba(109, 40, 217, 0.12);
 }
 
 .category-card[data-category="life"] {
-  --card-color: #f97316;
-  --card-accent: #fbbf24;
-  --card-bg: rgba(249, 115, 22, 0.1);
+  --card-color: #be185d;
+  --card-accent: #db2777;
+  --card-bg: rgba(190, 24, 93, 0.12);
+}
+
+/* Dark mode category overrides */
+.dark .category-card[data-category="physics"] {
+  --card-color: #a78bfa;
+  --card-accent: #c084fc;
+  --card-bg: rgba(167, 139, 250, 0.15);
+}
+
+/* Dark mode link enhancements */
+.dark .vp-doc a {
+  text-decoration-opacity: 0.7;
+}
+
+.dark .vp-doc a:hover {
+  text-decoration-opacity: 1;
+}
+
+.dark .category-card[data-category="computer"] {
+  --card-color: #818cf8;
+  --card-accent: #a78bfa;
+  --card-bg: rgba(129, 140, 248, 0.15);
+}
+
+.dark .category-card[data-category="life"] {
+  --card-color: #f472b6;
+  --card-accent: #e879f9;
+  --card-bg: rgba(244, 114, 182, 0.15);
 }
 
 /* ===================================
@@ -332,14 +376,20 @@
 
 .vp-doc a {
   color: var(--vp-c-brand-1);
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-color: var(--vp-c-brand-1);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-decoration-opacity: 0.6;
   font-weight: 500;
-  transition: color var(--transition-fast);
+  transition: all var(--transition-fast);
+  position: relative;
 }
 
 .vp-doc a:hover {
   color: var(--vp-c-brand-2);
-  text-decoration: underline;
+  text-decoration-opacity: 1;
+  text-decoration-thickness: 2.5px;
 }
 
 /* ===================================
