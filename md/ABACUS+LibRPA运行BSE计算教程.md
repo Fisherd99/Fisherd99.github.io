@@ -163,7 +163,10 @@ Total oscillator strength = 1.07042
 ```
 
 执行`plot.ipynb`后应当得到这样的吸收谱：
-
+$$
+\epsilon_{2}(\omega)=\sum_{S}\frac{4\pi^{2}}{N_{k}V}\left|\sum_{ai\boldsymbol{ k }}\frac{\langle i\boldsymbol{k}|\vec{v}|a\boldsymbol{k}\rangle}{E_a-E_i} X_{ai\boldsymbol{k}}^{S}\right|^{2}\delta(\omega-\Omega_{S})
+$$
+其中$\delta$函数用高斯展宽做了近似。有些文献也会采用洛伦兹展宽。
 <img src="/si_absorption_spectrum.png" alt="Si吸收谱" style="width: 65%;">
 
 图中显示了Si的吸收谱，包含TDA（Tamm-Dancoff近似）和Full（完整BSE）两种计算结果。计算完成后，`OUT.bse/`目录下会生成以下主要输出文件：
@@ -181,3 +184,8 @@ GW和BSE的相关输出文件可参考：/example-k555-f888/ref
 - **LibRPA GW计算**：约3小时（48核）
 - **BSE计算**：约50分钟
 - **总计算时间**：约4小时
+
+## 目前已知的需要注意的地方
+1. 进程并行配置的原则是，BSE矩阵的2d块循环local部分的矩阵元不超过int的上限，即2^31。否则scalapack和ELPA可能会出现问题。
+    线程并行并不是开得越多越好，实测在线程数比较大的时候，很可能在cvc部分报std::bad_alloc（尽管系统的内存还有100G，暂不清楚具体原因）
+    案例：在测试k=21×21×21, nocc=4, nvirt=4的情形时，推荐使用16个进程×16个线程的并行方案。
