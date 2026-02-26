@@ -10,6 +10,7 @@ tags:
   - 凝聚态物理
 description: 方便新手快速上手
 ---
+# ABACUS+LibRPA运行BSE计算教程
 
 ## 计算流程概览
 

@@ -11,15 +11,15 @@ export const navConfig = [
     "items": [
       {
         "text": "ABACUS+LibRPA运行BSE计算教程",
-        "link": "/ABACUS+LibRPA运行BSE计算教程"
+        "link": "/abacus-librpa-bse-tutorial"
       },
       {
         "text": "BSE中full情形的对角化流程",
-        "link": "/beyond_tda流程"
+        "link": "/bse-full-diagonalization"
       },
       {
         "text": "k空间和R空间的LRI矩阵元",
-        "link": "/k空间和R空间的LRI矩阵元"
+        "link": "/k-r-space-lri-tensor"
       }
     ]
   },
@@ -32,7 +32,7 @@ export const navConfig = [
       },
       {
         "text": "服务器备忘录",
-        "link": "/服务器备忘录"
+        "link": "/server-notes"
       }
     ]
   },
@@ -54,15 +54,15 @@ export const sidebarConfig = [
     "items": [
       {
         "text": "ABACUS+LibRPA运行BSE计算教程",
-        "link": "/ABACUS+LibRPA运行BSE计算教程"
+        "link": "/abacus-librpa-bse-tutorial"
       },
       {
         "text": "BSE中full情形的对角化流程",
-        "link": "/beyond_tda流程"
+        "link": "/bse-full-diagonalization"
       },
       {
         "text": "k空间和R空间的LRI矩阵元",
-        "link": "/k空间和R空间的LRI矩阵元"
+        "link": "/k-r-space-lri-tensor"
       }
     ]
   },
@@ -76,7 +76,7 @@ export const sidebarConfig = [
       },
       {
         "text": "服务器备忘录",
-        "link": "/服务器备忘录"
+        "link": "/server-notes"
       }
     ]
   },

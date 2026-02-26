@@ -10,6 +10,7 @@ tags:
   - 凝聚态物理
 description: BSE计算中超越TDA近似的方法
 ---
+# BSE中full情形的对角化流程
 
 本文是以下两篇文章的阅读笔记
 

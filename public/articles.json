@@ -1,7 +1,7 @@
 [
   {
     "title": "ABACUS+LibRPA运行BSE计算教程",
-    "link": "/ABACUS+LibRPA运行BSE计算教程",
+    "link": "/abacus-librpa-bse-tutorial",
     "description": "方便新手快速上手",
     "tags": [
       "BSE",
@@ -13,7 +13,7 @@
   },
   {
     "title": "k空间和R空间的LRI矩阵元",
-    "link": "/k空间和R空间的LRI矩阵元",
+    "link": "/k-r-space-lri-tensor",
     "description": "关于k空间和R空间的变换关系，以及Local RI在两个表象下的变换关系",
     "tags": [
       "k点",
@@ -37,7 +37,7 @@
   },
   {
     "title": "服务器备忘录",
-    "link": "/服务器备忘录",
+    "link": "/server-notes",
     "description": "关于配置服务器的一些记录",
     "tags": [
       "服务器",
@@ -62,7 +62,7 @@
   },
   {
     "title": "BSE中full情形的对角化流程",
-    "link": "/beyond_tda流程",
+    "link": "/bse-full-diagonalization",
     "description": "BSE计算中超越TDA近似的方法",
     "tags": [
       "BSE",
