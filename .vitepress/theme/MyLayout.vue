@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import DefaultTheme from 'vitepress/theme'
 import Giscus from "@giscus/vue";
 import HomeArticlesAuto from './HomeArticlesAuto.vue'
+import PageViewTrend from './PageViewTrend.vue'
 import { useData } from "vitepress";
 
 const { isDark, page, frontmatter } = useData();
@@ -26,6 +27,15 @@ const showHomeArticles = computed(() => {
 
     <template #doc-after>
       <div style="margin-top: 24px">
+        <div class="pageview-stats">
+          <span id="busuanzi_container_site_pv">
+            历史总访问量：<span id="busuanzi_value_site_pv">0</span>
+          </span>
+          <span id="busuanzi_container_page_pv">
+            本页阅读量：<span id="busuanzi_value_page_pv">0</span>
+          </span>
+        </div>
+        <PageViewTrend />
         <Giscus
           repo="Fisherd99/Fisherd99.github.io"
           repo-id="R_kgDOJmvFtA"
@@ -43,3 +53,14 @@ const showHomeArticles = computed(() => {
     </template>
   </Layout>
 </template>
+
+<style scoped>
+.pageview-stats {
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  color: var(--vp-c-text-2);
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+</style>
