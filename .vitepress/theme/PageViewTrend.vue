@@ -8,10 +8,12 @@ interface Snapshot {
 }
 
 type HistoryMap = Record<string, Snapshot[]>
+type DataSource = 'server' | 'local'
 
 const STORAGE_KEY = 'fisherd_pageview_history_v1'
 const MAX_POINTS = 24
 const SAME_VALUE_MIN_INTERVAL = 30 * 1000
+const SERVER_FETCH_TIMEOUT = 4000
 const SVG_WIDTH = 380
 const SVG_HEIGHT = 108
 const PADDING_LEFT = 36
@@ -21,6 +23,8 @@ const PADDING_BOTTOM = 14
 
 const route = useRoute()
 const snapshots = ref<Snapshot[]>([])
+const dataSource = ref<DataSource>('local')
+const serverError = ref<string>('')
 let periodicTimer: number | null = null
 
 const normalizedPath = computed(() => route.path.split('#')[0].split('?')[0] || '/')
@@ -69,6 +73,142 @@ const readCurrentPageViews = () => {
   return Number.isFinite(numeric) ? numeric : null
 }
 
+const parseTimestamp = (value: unknown) => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value < 1e12 ? value * 1000 : value
+  }
+  if (typeof value === 'string' && value.trim()) {
+    const numeric = Number(value)
+    if (Number.isFinite(numeric)) {
+      return numeric < 1e12 ? numeric * 1000 : numeric
+    }
+    const dateParsed = Date.parse(value)
+    if (Number.isFinite(dateParsed)) {
+      return dateParsed
+    }
+  }
+  return null
+}
+
+const resolveApiUrl = (metaName: string, path: string) => {
+  if (typeof document === 'undefined' || typeof window === 'undefined') {
+    return null
+  }
+  const meta = document.querySelector(`meta[name="${metaName}"]`)
+  const rawUrl = meta?.getAttribute('content')?.trim()
+  if (!rawUrl) {
+    return null
+  }
+  try {
+    const url = new URL(rawUrl, window.location.origin)
+    url.searchParams.set('path', path)
+    return url.toString()
+  } catch (error) {
+    serverError.value = `invalid ${metaName}: ${String(error)}`
+    return null
+  }
+}
+
+const parseValue = (item: Record<string, unknown>) => {
+  const candidates = [item.value, item.y, item.views, item.pageviews, item.count]
+  for (const raw of candidates) {
+    if (typeof raw === 'number' && Number.isFinite(raw)) {
+      return raw
+    }
+    if (typeof raw === 'string') {
+      const numeric = Number(raw)
+      if (Number.isFinite(numeric)) {
+        return numeric
+      }
+    }
+  }
+  return null
+}
+
+const normalizeServerSnapshots = (payload: unknown): Snapshot[] => {
+  if (!payload || typeof payload !== 'object') {
+    return []
+  }
+  const container = payload as Record<string, unknown>
+  const maybeList = [container.points, container.data, container.pageviews].find(Array.isArray)
+  if (!maybeList || !Array.isArray(maybeList)) {
+    return []
+  }
+
+  const normalized = maybeList
+    .map((raw) => {
+      if (!raw || typeof raw !== 'object') {
+        return null
+      }
+      const item = raw as Record<string, unknown>
+      const ts = parseTimestamp(item.ts ?? item.timestamp ?? item.time ?? item.x ?? null)
+      const value = parseValue(item)
+      if (ts === null || value === null) {
+        return null
+      }
+      return { ts, value }
+    })
+    .filter((item): item is Snapshot => item !== null)
+    .sort((a, b) => a.ts - b.ts)
+
+  return normalized.slice(-MAX_POINTS)
+}
+
+const fetchServerSnapshots = async () => {
+  const url = resolveApiUrl('pageview-history-api', normalizedPath.value)
+  if (!url || typeof window === 'undefined') {
+    return null
+  }
+  const controller = new AbortController()
+  const timer = window.setTimeout(() => controller.abort(), SERVER_FETCH_TIMEOUT)
+  try {
+    const response = await fetch(url, { cache: 'no-store', signal: controller.signal })
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+    const payload = await response.json()
+    const serverSnapshots = normalizeServerSnapshots(payload)
+    return serverSnapshots
+  } catch (error) {
+    serverError.value = `server history fetch failed: ${String(error)}`
+    return null
+  } finally {
+    window.clearTimeout(timer)
+  }
+}
+
+const trackPageviewOnServer = async () => {
+  if (typeof window === 'undefined') {
+    return false
+  }
+  const url = resolveApiUrl('pageview-track-api', normalizedPath.value)
+  if (!url) {
+    return false
+  }
+
+  const payload = JSON.stringify({
+    path: normalizedPath.value,
+    ts: Date.now()
+  })
+
+  try {
+    if (navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: 'application/json' })
+      navigator.sendBeacon(url, blob)
+      return true
+    }
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      keepalive: true
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
 const saveSnapshot = (value: number) => {
   const history = readHistory()
   const list = history[normalizedPath.value] ?? []
@@ -114,6 +254,28 @@ const startPeriodicCapture = () => {
   periodicTimer = window.setInterval(() => {
     captureWithRetry(2)
   }, SAME_VALUE_MIN_INTERVAL)
+}
+
+const loadFromLocalSnapshots = () => {
+  dataSource.value = 'local'
+  loadSnapshots()
+  captureWithRetry()
+  startPeriodicCapture()
+}
+
+const syncSnapshots = async () => {
+  stopPeriodicCapture()
+  serverError.value = ''
+
+  await trackPageviewOnServer()
+
+  const serverSnapshots = await fetchServerSnapshots()
+  if (serverSnapshots !== null) {
+    snapshots.value = serverSnapshots
+    dataSource.value = 'server'
+    return
+  }
+  loadFromLocalSnapshots()
 }
 
 const chartPoints = computed(() => {
@@ -174,6 +336,13 @@ const yAxisTicks = computed(() => {
 
 const axisBottomY = computed(() => SVG_HEIGHT - PADDING_BOTTOM)
 
+const sourceNote = computed(() => {
+  if (dataSource.value === 'server') {
+    return '说明：该图基于服务器历史数据库（API）生成。'
+  }
+  return '说明：该图按浏览器本地历史快照生成（未取到服务器历史数据时自动回退）。'
+})
+
 const yAxisLabelPositions = computed(() => {
   return yAxisTicks.value.map((tick) => ({
     value: tick.value,
@@ -202,18 +371,14 @@ const xAxisTicks = computed(() => {
 })
 
 onMounted(() => {
-  loadSnapshots()
-  captureWithRetry()
-  startPeriodicCapture()
+  void syncSnapshots()
 })
 
 watch(
   () => route.path,
   () => {
     nextTick(() => {
-      loadSnapshots()
-      captureWithRetry()
-      startPeriodicCapture()
+      void syncSnapshots()
     })
   }
 )
@@ -268,7 +433,8 @@ watch(
     <div v-if="xAxisTicks.length" class="pv-trend-x-axis">
       <span v-for="tick in xAxisTicks" :key="tick.key">{{ tick.label }}</span>
     </div>
-    <div class="pv-trend-note">说明：该图按浏览器本地历史快照生成，用于展示阅读量变化趋势。</div>
+    <div class="pv-trend-note">{{ sourceNote }}</div>
+    <div v-if="serverError" class="pv-trend-note">{{ serverError }}</div>
   </section>
 </template>
 

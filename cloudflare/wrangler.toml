@@ -1,0 +1,8 @@
+name = "fisherd-pageview-api"
+main = "./pageview-worker.js"
+compatibility_date = "2026-03-08"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "fisherd-pageview-db"
+database_id = "9929fe86-780b-4b68-bdb4-25f03526c7ef"

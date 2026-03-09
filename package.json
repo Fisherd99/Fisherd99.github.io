@@ -9,7 +9,14 @@
     "docs:build": "node generate-articles-list.js && node generate-nav-config.js && vitepress build",
     "docs:preview": "vitepress preview",
     "generate-nav": "node generate-nav-config.js",
-    "generate-articles": "node generate-articles-list.js"
+    "generate-articles": "node generate-articles-list.js",
+    "pageview:api": "node scripts/pageview-api-server.mjs",
+    "cf:pageview:dev": "npx wrangler dev cloudflare/pageview-worker.js --config cloudflare/wrangler.toml",
+    "cf:pageview:deploy": "npx wrangler deploy --config cloudflare/wrangler.toml",
+    "cf:pageview:d1:create": "npx wrangler d1 create fisherd-pageview-db --config cloudflare/wrangler.toml",
+    "cf:pageview:d1:info": "npx wrangler d1 info DB --config cloudflare/wrangler.toml",
+    "cf:pageview:d1:migrate": "npx wrangler d1 execute DB --remote --config cloudflare/wrangler.toml --file cloudflare/schema.sql",
+    "cf:pageview:d1:migrate:local": "npx wrangler d1 execute DB --local --config cloudflare/wrangler.toml --file cloudflare/schema.sql"
   },
   "keywords": [],
   "author": "",

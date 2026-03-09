@@ -2,11 +2,20 @@ import { defineConfig } from 'vitepress'
 import markdownItAnchor from 'markdown-it-anchor'
 import { navConfig, sidebarConfig } from './nav-config.js'
 
+const pageviewApiBase = process.env.PAGEVIEW_API_BASE?.replace(/\/$/, '')
+const pageviewHead = pageviewApiBase
+  ? [
+      ['meta', { name: 'pageview-track-api', content: `${pageviewApiBase}/api/pageview/track` }],
+      ['meta', { name: 'pageview-history-api', content: `${pageviewApiBase}/api/pageview/history` }]
+    ]
+  : []
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   srcDir: "./md",
   base: "/",
   lang: "zh-CN",
+  head: pageviewHead,
   title: "卷心菜农场 —— Fisherd's blog",
   description: "Cabbage Farm",
 

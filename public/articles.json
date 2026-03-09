@@ -1,5 +1,16 @@
 [
   {
+    "title": "服务端浏览历史 API 说明",
+    "link": "/server-pageview-history-api",
+    "description": "折线图改为服务器历史数据库来源时的 API 约定与接入方式",
+    "tags": [
+      "analytics",
+      "vitepress"
+    ],
+    "date": "2026-03-08",
+    "category": "计算机"
+  },
+  {
     "title": "ABACUS+LibRPA运行BSE计算教程",
     "link": "/abacus-librpa-bse-tutorial",
     "description": "方便新手快速上手",
