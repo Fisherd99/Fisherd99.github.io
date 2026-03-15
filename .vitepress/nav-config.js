@@ -33,10 +33,6 @@ export const navConfig = [
       {
         "text": "服务器备忘录",
         "link": "/server-notes"
-      },
-      {
-        "text": "服务端浏览历史 API 说明",
-        "link": "/server-pageview-history-api"
       }
     ]
   },
@@ -81,10 +77,6 @@ export const sidebarConfig = [
       {
         "text": "服务器备忘录",
         "link": "/server-notes"
-      },
-      {
-        "text": "服务端浏览历史 API 说明",
-        "link": "/server-pageview-history-api"
       }
     ]
   },

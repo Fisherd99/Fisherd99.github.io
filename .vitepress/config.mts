@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 import markdownItAnchor from 'markdown-it-anchor'
 import { navConfig, sidebarConfig } from './nav-config.js'
 
-const pageviewApiBase = process.env.PAGEVIEW_API_BASE?.replace(/\/$/, '')
+const pageviewApiBase = (process.env.PAGEVIEW_API_BASE ?? 'https://fisherd-pageview-api.fisherd.workers.dev').replace(/\/$/, '')
 const pageviewHead = pageviewApiBase
   ? [
       ['meta', { name: 'pageview-track-api', content: `${pageviewApiBase}/api/pageview/track` }],

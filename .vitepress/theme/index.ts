@@ -10,6 +10,9 @@ declare global {
     busuanzi?: {
       fetch?: () => void
     }
+    clustrmaps?: {
+      [key: string]: unknown
+    }
   }
 }
 
@@ -21,6 +24,7 @@ export default {
   setup() {
     const route = useRoute()
     let busuanziScriptLoaded = false
+    let clustrmapsScriptLoaded = false
 
     const initZoom = () => {
       // 为所有图片增加缩放功能
@@ -47,16 +51,41 @@ export default {
       }, 80)
     }
 
+    const ensureClustrmapsScript = () => {
+      if (typeof window === 'undefined' || clustrmapsScriptLoaded) {
+        return
+      }
+      const container = document.getElementById('clustrmaps-widget')
+      if (!container) {
+        return
+      }
+      if (container.querySelector('#mapmyvisitors')) {
+        clustrmapsScriptLoaded = true
+        return
+      }
+      const script = document.createElement('script')
+      script.type = 'text/javascript'
+      script.id = 'mapmyvisitors'
+      script.src = 'https://mapmyvisitors.com/map.js?cl=ffffff&w=a&t=tt&d=vI6kFKqVuy9qV_ohB4mdDaJhBxJn0m-VmrLLdRa1IHA'
+      container.innerHTML = ''
+      container.appendChild(script)
+      clustrmapsScriptLoaded = true
+    }
+
     onMounted(() => {
       ensureBusuanziScript()
       initZoom()
       refreshBusuanzi()
+      nextTick(() => {
+        ensureClustrmapsScript()
+      })
     })
     watch(
       () => route.path,
       () => nextTick(() => {
         initZoom()
         refreshBusuanzi()
+        ensureClustrmapsScript()
       })
     )
   }
