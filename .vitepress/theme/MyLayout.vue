@@ -136,7 +136,17 @@ watch(
           </span>
         </div>
         <div class="pageview-status">{{ cfStatus }}</div>
-        <div id="clustrmaps-widget" class="clustrmaps-widget" />
+        <div class="clustrmaps-image-fallback">
+          <a href="https://clustrmaps.com/site/1c9gk" target="_blank" rel="noopener noreferrer" title="ClustrMaps 访客地图（图片版）">
+            <img
+              src="https://clustrmaps.com/map_v2.png?d=VpkDqecV3OjOsNVCPviWx_l4EAGGUzd6YKd4fsZkGOM&cl=ffffff&w=300&t=tt"
+              alt="ClustrMaps 访客地图（图片版）"
+              loading="lazy"
+              decoding="async"
+              referrerpolicy="no-referrer-when-downgrade"
+            >
+          </a>
+        </div>
         <Giscus
           repo="Fisherd99/Fisherd99.github.io"
           repo-id="R_kgDOJmvFtA"
@@ -171,8 +181,15 @@ watch(
   color: var(--vp-c-text-3);
 }
 
-.clustrmaps-widget {
-  margin: 14px 0 18px;
-  min-height: 24px;
+.clustrmaps-image-fallback {
+  margin: 10px 0 18px;
+}
+
+.clustrmaps-image-fallback img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
 }
 </style>
