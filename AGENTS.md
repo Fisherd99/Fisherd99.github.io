@@ -7,6 +7,33 @@
 - Navigation and article lists are auto-generated from frontmatter.
 - Primary language is zh-CN; keep filenames English for clean URLs.
 
+## Code Architecture
+```
+vitepress/
+├── .github/
+│   └── workflows/                # GitHub Pages deployment
+├── .vitepress/
+│   ├── config.mts                # VitePress site configuration
+│   ├── nav-config.js             # Auto-generated navigation (DO NOT EDIT)
+│   ├── theme/                    # Custom layout and styles
+│   │   └── custom.css            # Color styles
+│   │   └── HomeArticlesAuto.vue  # Customized home page
+│   │   └── index.ts              # Theme entry
+│   │   └── MyLayout.vue          # Layout wrapper
+│   ├── cache/                    # VitePress build cache
+│   └── dist/                     # Built site output
+├── md/                           # Content source directory
+│   ├── public/                   # Static assets (images, articles.json)
+│   └── *.md                      # Markdown articles + homepage
+├── public/
+│   └── articles.json             # Auto-generated article metadata
+├── package.json                  # Dependencies and scripts
+├── generate-articles-list.js     # Script to generate articles list
+├── generate-nav-config.js        # Script to generate nav config
+├── UPDATE_LOG.md                 # Unified update changelog
+└── AGENTS.md                     # File for AI Agents.
+```
+
 ## Key Paths
 - `md/` content sources (Markdown articles, images under `md/public/`).
 - `.vitepress/config.mts` site configuration (ESM/TypeScript).
@@ -14,6 +41,13 @@
 - `public/articles.json` auto-generated article metadata (DO NOT EDIT).
 - `generate-articles-list.js` and `generate-nav-config.js` generation scripts.
 - `.vitepress/theme/` custom theme components and styles.
+
+## Build Dependencies
+The VitePress site uses:
+- VitePress ^2.0.0-alpha.12
+- Markdown extensions for math (markdown-it-mathjax3)
+- Medium-zoom for image zooming
+- Giscus for comments
 
 ## Build / Dev / Preview Commands
 - Install deps: `npm install`
@@ -92,45 +126,6 @@ science topics. The site is deployed to GitHub Pages.
 Key feature: Fully automated content management using frontmatter-based
 metadata extraction.
 
-## Commit Conventions
-
-This project uses simple present tense commit messages (English):
-
-- `add` - Adding new content or features
-- `update` - Updating existing content
-- `fix` - Fixing bugs or errors
-- `enable` - Enabling features
-- `change` - Making changes to configuration
-
-Examples:
-- `add gdb note and beyond tda note`
-- `update k space LRI`
-
-## Code Architecture
-
-```
-vitepress/
-├── .github/
-│   └── workflows/                # GitHub Pages deployment
-├── .vitepress/
-│   ├── config.mts                # VitePress site configuration
-│   ├── nav-config.js             # Auto-generated navigation (DO NOT EDIT)
-│   ├── theme/                    # Custom layout and styles
-│   │   └── HomeArticlesAuto.vue  # Customized home page
-│   ├── cache/                    # VitePress build cache
-│   └── dist/                     # Built site output
-├── md/                           # Content source directory
-│   ├── public/                   # Static assets (images, articles.json)
-│   └── *.md                      # Markdown articles + homepage
-├── public/
-│   └── articles.json             # Auto-generated article metadata
-├── package.json                  # Dependencies and scripts
-├── generate-articles-list.js     # Script to generate articles list
-├── generate-nav-config.js        # Script to generate nav config
-├── UPDATE_LOG.md                 # Unified update changelog
-└── AGENTS.md                     # File for AI Agents.
-```
-
 ## Workflows
 
 ### Automated Content Management
@@ -150,54 +145,66 @@ vitepress/
 Steps:
 1. Create markdown file in `md/` with frontmatter
 2. Run `npm run docs:dev` or `npm run docs:build`
-3. Article appears in nav + homepage
+3. Article will automatically appears in nav + homepage
 
-### Deploying to GitHub Pages
+### Update and Deploying to GitHub Pages
 
 - Trigger: push to `master` (GitHub Actions)
 - Build uses Node.js 22 on `ubuntu-latest`
-- Output: `.vitepress/dist`
+- Update Log `vitepress/UPDATE_LOG.md` in these formats in Chinese and English:
+  ```markdown
+  # 更新日志
 
-## Theme Notes
+  ## YYYY-MM-DD - Feature Name
 
-- Layout wrapper: `.vitepress/theme/MyLayout.vue`
-- Theme entry: `.vitepress/theme/index.ts`
-- Styles: `.vitepress/theme/custom.css`
+  ### 新增功能
+  - Feature 1
+  - Feature 2
 
-## Update Logging Convention
+  ### 文件变更
+  - 新增: file.js
+  - 更新: file2.js
+  - 删除: old_file.js
+  ```
+- When git commit, follow these **commit conventions** in English:
+  ```markdown
+  - `add` - Adding new content or features
+  - `update` - Updating existing content
+  - `fix` - Fixing bugs or errors
+  - `enable` - Enabling features
+  - `change` - Making changes to configuration
 
-- File: `UPDATE_LOG.md` (reverse chronological)
-- Include: what changed, how to use it, and a short file list
+  Examples:
+  - `add gdb note and beyond tda note`
+  - `update k-r-space-LRI`
+  ```
 
-## Frontmatter Reference
+## Frontmatter Requirements
 
-Required:
-```yaml
-title: Article Title
-categories: 物理
-```
+All articles MUST include frontmatter with these fields:
 
-Optional:
-```yaml
-lang: zh-CN
-date: YYYY-MM-DD
-author: "Fisherd"
-tags:
-  - BSE
-description: Short description
-```
+  ```markdown
+  ---
+  title: Article Title
+  lang: zh-CN
+  date: YYYY-MM-DD
+  author: "Fisherd"
+  categories: 物理  # 物理/计算机/生活
+  tags:
+    - tag1
+    - tag2
+  description: Article description
+  ---
+  ```
+Missing frontmatter or categories = article excluded from nav/homepage.
 
-Categories:
-- `物理` - Physics, condensed matter, BSE, GW
+**Categories**:
+- `物理` - Physics, condensed matter, BSE, GW calculations
 - `计算机` - Programming, servers, tools
 - `生活` - Photo gallery, daily life
 
-Implementation Notes:
+## Implementation Notes
 - Parser handles both Windows (`\r\n`) and Unix (`\n`) line endings
 - Multi-line arrays supported (tags field)
 - Missing frontmatter or categories = article excluded from nav/homepage
 - `index.md` automatically excluded from article lists
-
-## Notes
-
-- No test suite - This is a static documentation site
