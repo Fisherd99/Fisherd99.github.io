@@ -8,7 +8,7 @@
       "GW",
       "凝聚态物理"
     ],
-    "date": "2026-02-04",
+    "date": "2026-08-17",
     "category": "物理"
   },
   {
@@ -26,7 +26,7 @@
   },
   {
     "title": "相册",
-    "link": "/photo_gallery",
+    "link": "/photo-gallery",
     "description": "个人摄影集",
     "tags": [
       "摄影",

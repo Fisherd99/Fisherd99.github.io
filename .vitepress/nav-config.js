@@ -41,7 +41,7 @@ export const navConfig = [
     "items": [
       {
         "text": "相册",
-        "link": "/photo_gallery"
+        "link": "/photo-gallery"
       }
     ]
   }
@@ -86,7 +86,7 @@ export const sidebarConfig = [
     "items": [
       {
         "text": "相册",
-        "link": "/photo_gallery"
+        "link": "/photo-gallery"
       }
     ]
   }

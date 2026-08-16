@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
 import markdownItAnchor from 'markdown-it-anchor'
+import markdownItMathjax3 from 'markdown-it-mathjax3'
 import { navConfig, sidebarConfig } from './nav-config.js'
 
 const pageviewApiBase = (process.env.PAGEVIEW_API_BASE ?? 'https://fisherd-pageview-api.fisherd.workers.dev').replace(/\/$/, '')
@@ -9,6 +10,8 @@ const pageviewHead = pageviewApiBase
       ['meta', { name: 'pageview-history-api', content: `${pageviewApiBase}/api/pageview/history` }]
     ]
   : []
+
+// Use markdown-it-mathjax3 plugin and define `\bm` macro via plugin options.
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -23,6 +26,14 @@ export default defineConfig({
     math: true,
     lineNumbers: true,
     image: {lazyLoading: true},
+    // 使用 markdown-it-mathjax3 插件并在 tex.macros 中定义 \bm
+    config: (md) => {
+      md.use(markdownItMathjax3, {
+        tex: {
+          macros: { bm: ["{\\boldsymbol{#1}}", 1] }
+        }
+      })
+    },
     // markdown-it-anchor 的选项
     // https://github.com/valeriangalliat/markdown-it-anchor#usage
     // anchor: {
@@ -31,7 +42,7 @@ export default defineConfig({
     // @mdit-vue/plugin-toc 的选项
     // https://github.com/mdit-vue/mdit-vue/tree/main/packages/plugin-toc#options
     toc: { level: [1, 2] },
-    },
+  },
 
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config

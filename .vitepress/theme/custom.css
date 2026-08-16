@@ -417,6 +417,24 @@
   transform: scale(1.02);
 }
 
+/* Article figures and captions */
+.vp-doc figure {
+  margin: 1.5rem 0 2rem;
+  text-align: center;
+}
+
+.vp-doc figure > img {
+  margin: 0 auto;
+}
+
+.vp-doc figure > figcaption {
+  max-width: 96%;
+  margin: 0.75rem auto 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  text-align: left;
+}
+
 /* ===================================
    Sidebar Enhancements
    =================================== */

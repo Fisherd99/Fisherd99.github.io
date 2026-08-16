@@ -135,6 +135,13 @@ TaskPlugin=task/affinity,task/cgroup
 NodeName=$HOST CPUs=$(nproc) RealMemory=$(free -m | awk '/^Mem:/{print $2}') State=UNKNOWN
 PartitionName=debug Nodes=ALL Default=YES MaxTime=INFINITE State=UP
 #
+# SCHEDULING
+SelectType=select/cons_tres
+SelectTypeParameters=CR_CPU_Memory
+DefMemPerCPU=4000
+SchedulerParameters=allow_oversubscribe
+SchedulerType=sched/backfill
+#
 # TIMERS
 InactiveLimit=0
 KillWait=30
@@ -148,22 +155,25 @@ SlurmdTimeout=300
 #VSizeFactor=0
 Waittime=0
 #
-# SCHEDULING
-SelectType=select/cons_res
-SelectTypeParameters=CR_CPU
-SchedulerParameters=allow_oversubscribe
-SchedulerType=sched/backfill
-SelectType=select/cons_tres
-#
 # LOGGING AND ACCOUNTING
-AccountingStorageType=accounting_storage/none
+AccountingStorageType=accounting_storage/slurmdbd
+AccountingStorageHost=$HOST
+AccountingStoragePort=6819
+AccountingStorageEnforce=limits
 JobCompType=jobcomp/none
 JobAcctGatherFrequency=30
-JobAcctGatherType=jobacct_gather/none
+JobAcctGatherType=jobacct_gather/cgroup
 SlurmctldDebug=info
 SlurmctldLogFile=/var/log/slurm/slurmctld.log
 SlurmdDebug=info
 SlurmdLogFile=/var/log/slurm/slurmd.log
+EOF
+
+cat <<EOF | sudo tee /etc/slurm/cgroup.conf
+CgroupPlugin=autodetect
+ConstrainRAMSpace=yes
+ConstrainSwapSpace=no
+AllowedRAMSpace=100
 EOF
 
 # 3. 一次目录+权限
@@ -205,6 +215,8 @@ alias sq='squeue -o "%.18i %.9P %.12j %.12u %.12T %.12M %.16l %.6D %R"'
 alias sac='sacct --format=JobID,JobName,AllocCPUs,State,ExitCode,MaxRSS,Elapsed,Start,End' #slurm accounting
 alias sst='sstat --format=JobID,MaxVMSize,MaxVMSizeNode,MaxVMSizeTask,AveVMSize,\
 MaxRSS,MaxRSSNode,MaxRSSTask,AveRSS' # must followed by -j jobid
+alias sac7='sacct -u $USER -S now-7days -X \
+ --format=JobID,JobName%24,Partition,State,ExitCode,Elapsed,Submit,Start,End -n'
 ```
 ## 安装开发工具
 ### Conda
@@ -328,13 +340,28 @@ git clone -o fish https://github.com/Fisherd99/abacus-BSE.git
 ```shell
 cmake -B build -DELPA_DIR=/elpa安装目录/ -DCMAKE_INSTALL_PREFIX=/ABACUS安装目录/ -DENABLE_DEEPKS=1 -DENABLE_LIBRI=ON -DTorch_DIR=/Torch目录/ -Dlibnpy_INCLUDE_DIR=/libnpy目录/ -DLibxc_DIR=/libxc目录/ -DCEREAL_INCLUDE_DIR=$Path to the parent folder of `cereal/cereal.hpp`
 % 具体例子：
-cmake -B build -DELPA_DIR=/opt/elpa_2025.06.001-install -DLibxc_DIR=/opt/libxc-7.0.0-install -DCEREAL_INCLUDE_DIR=/opt/cereal-1.3.2/include -DLIBRI_DIR=$HOME/deepmodeling/LibRI -DLIBCOMM_DIR=$HOME/deepmodeling/LibComm -DGTEST_DIR=$HOME/Downloads/googletest-1.17.0/install -DBUILD_TESTING=ON -DDEBUG_INFO=ON
+cmake -B build -DENABLE_ELPA=ON -DELPA_DIR=/opt/elpa_2025.06.001-install -DENABLE_LIBXC=ON -DLibxc_DIR=/opt/libxc-7.0.0-install -Dcereal_DIR=/opt/cereal-1.3.2-install -DENABLE_LIBRI=ON -DLIBRI_DIR=$HOME/deepmodeling/LibRI -DLIBCOMM_DIR=$HOME/deepmodeling/LibComm -DGTEST_DIR=$HOME/Downloads/googletest-1.17.0/install -DBUILD_TESTING=ON -DDEBUG_INFO=ON
 
-cmake -B build_debug -DELPA_DIR=/opt/elpa_2025.06.001-install -DLibxc_DIR=/opt/libxc-7.0.0-install -DCEREAL_INCLUDE_DIR=/opt/cereal-1.3.2/include -DLIBRI_DIR=$HOME/deepmodeling/LibRI -DLIBCOMM_DIR=$HOME/deepmodeling/LibComm -DCMAKE_BUILD_TYPE=Debug
+cmake -B build_debug -DELPA_DIR=/opt/elpa_2025.06.001-install -DENABLE_LIBXC=ON -DLibxc_DIR=/opt/libxc-7.0.0-install -Dcereal_DIR=/opt/cereal-1.3.2-install -DENABLE_LIBRI=ON -DLIBRI_DIR=$HOME/deepmodeling/LibRI -DLIBCOMM_DIR=$HOME/deepmodeling/LibComm -DDEBUG_INFO=ON -DCMAKE_BUILD_TYPE=Debug
 ------------------------------
 cmake --build build -j`nproc`
 cmake --build build_debug -j`nproc`
 cmake --install build
+```
+### LibRPA
+git clone -o fish https://github.com/Fisherd99/LibRPA.git
+```shell
+cmake -B build -DLIBRPA_USE_LIBRI=ON \
+    -DCEREAL_INCLUDE_DIR=/opt/cereal-1.3.2/include \
+    -DLIBRI_INCLUDE_DIR=$HOME/deepmodeling/LibRI/include \
+    -DLIBCOMM_INCLUDE_DIR=$HOME/deepmodeling/LibComm/include \
+    -DCMAKE_CXX_FLAGS="-DLIBRPA_VERBOSE"
+    
+cmake -B build_debug -DUSE_LIBRI=ON \
+    -DCEREAL_INCLUDE_DIR=/opt/cereal-1.3.2/include \
+    -DLIBRI_INCLUDE_DIR=$HOME/deepmodeling/LibRI/include \
+    -DLIBCOMM_INCLUDE_DIR=$HOME/deepmodeling/LibComm/include \
+    -DCMAKE_CXX_FLAGS="-g -DLIBRPA_VERBOSE -Rno-debug-disables-optimmization"
 ```
 ### pyatb
 先安装eigen-3.4.0
