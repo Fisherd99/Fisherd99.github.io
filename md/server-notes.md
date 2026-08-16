@@ -99,7 +99,7 @@ ls -l $(which sh)
 ```shell
 # 1. 装包
 sudo apt update
-sudo apt install -y munge slurm-wlm slurmctld slurmd
+sudo apt install -y munge slurm-wlm slurmctld slurmd slurmdbd
 
 # 1.5 生成配置
 --- 可以用自带的在线配置器生成slurm.conf ---
@@ -327,7 +327,10 @@ sudo make install
 ### Cereal
 由 https://github.com/USCiLab/cereal/releases 下载 cereal 源代码。
 ```shell
-sudo tar -xzvf cereal-1.3.2.tar.gz -C /opt/
+sudo tar -xzvf cereal-1.3.2.tar.gz
+cd cereal-1.3.2
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/opt/cereal-1.3.2-install -DJUST_INSTALL_CEREAL=ON
+sudo cmake --build build --target install
 ```
 对于OneAPI 2025.1及以后的编译器，需要修改cereal的代码，删掉两处template。见issue[[Compile] Build failed with LibRI via OneAPI 2025.1 · Issue #6190 · deepmodeling/abacus-develop](https://github.com/deepmodeling/abacus-develop/issues/6190)
 ## 安装计算软件
@@ -349,7 +352,7 @@ cmake --build build_debug -j`nproc`
 cmake --install build
 ```
 ### LibRPA
-git clone -o fish https://github.com/Fisherd99/LibRPA.git
+git clone https://github.com/minyez/LibRPA.git
 ```shell
 cmake -B build -DLIBRPA_USE_LIBRI=ON \
     -DCEREAL_INCLUDE_DIR=/opt/cereal-1.3.2/include \

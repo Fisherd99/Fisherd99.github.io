@@ -54,8 +54,16 @@ cmake -B build -DLIBRPA_USE_LIBRI=ON \
 ## 三、执行计算任务
 在例子[example-k555-f666.tar.gz](/example-k555-f666.tar.gz)中，文件夹结构如下
 ```
-├ ref
-| ├                                     # 一些参考结果，会在下文中用到
+├ ref/                                  # 参考数据，用于核对数据与绘图
+│ ├ abacusjob-bse.log                   # BSE运行日志，含激子结合能与振子强度总和
+│ ├ GW_band_spin_1.dat                  # GW准粒子能带
+│ ├ KS_band_spin_1.dat                  # KS能带
+│ ├ trans_dipole_singlet_tda.dat        # TDA单态跃迁偶极矩
+│ ├ trans_dipole_singlet_full.dat       # Full BSE单态跃迁偶极矩
+│ ├ Exciton_avg_elec_slice_state0.dat   # 第0激发态的平均电子密度切片
+│ ├ Exciton_avg_hole_slice_state0.dat   # 第0激发态的平均空穴密度切片
+│ ├ Exciton_cond_elec_slice_state0.dat  # 第0激发态的条件电子密度切片
+│ └ Exciton_cond_hole_slice_state0.dat  # 第0激发态的条件空穴密度切片
 ├ create_continue.sh                    # 重新更改密集k网格KPT_nscf后执行续算
 ├ create.sh                             # 一键从头执行全部任务
 ├ INPUT_bse
@@ -65,7 +73,7 @@ cmake -B build -DLIBRPA_USE_LIBRI=ON \
 ├ KPT_nscf
 ├ KPT_scf
 ├ librpa.in                             # LibRPA的输入文件
-├ plot_compare.py                       # 画GW band 与 KS band对比
+├ plot_compare.py                       # 画GW band与KS band对比
 ├ plot_spectrum.ipynb                   # 画吸收谱
 ├ preprocess_abacus_for_librpa_band.py  # 将ABACUS的nscf输出转换为LibRPA/BSE所需的密集k网格文件
 ├ Si_3s3p2d1f1g_pca1e-6.abfs            # 为了降低LRI误差人为增大的辅助基
