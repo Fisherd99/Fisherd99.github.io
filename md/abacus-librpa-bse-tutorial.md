@@ -13,12 +13,11 @@ description: 方便新手快速上手
 # ABACUS+LibRPA运行BSE计算教程
 本教程是论文 https://arxiv.org/abs/2607.05853 的配套实操手册，旨在帮助人类用户和LLM都能快速上手ABACUS+LibRPA的BSE计算。
 ## 一、计算流程概览
-
 BSE的计算包含scf→nscf→GW→BSE四个步骤，所有步骤都写在示例包[example-k555-f666.tar.gz](/example-k555-f666.tar.gz)的`create.sh`脚本中。
 
 1.用ABACUS做scf计算，并导出`band_out`、`coulomb_cut_{rank}.txt`、`coulomb_mat_{rank}.txt`、`coulomb_unshrinked_cut_{rank}.txt`、`Cs_data_{rank}.txt`、`Cs_shrinked_data_{rank}.txt`、`KS_eigenvector_{index}.dat`、`shrink_sinvS_{rank}.txt`、`velocity_matrix`、`vxc_out`、`stru_out`，其中`rank`是MPI进程数，`index`是k点序号，均从0计数。
 
-2.用ABACUS做nscf计算，并用`preprocess_abacus_for_librpa_band.py`导出`band_kpath_info`、`band_KS_eigenvalue_k_{index}.txt`、`band_KS_eigenvector_k_{index}.txt`、`band_vxc_k_{index}.txt`
+2.用ABACUS做nscf计算，并用`preprocess_abacus_for_librpa_band.py`导出`band_kpath_info`、`band_KS_eigenvalue_k_{index}.txt`、`band_KS_eigenvector_k_{index}.txt`、`band_vxc_k_{index}.txt`。这一步是为了后续从scf步骤中的稀疏k网格傅里叶插值到密集k网格，文件分别是密集k网格上的KS能级、KS波函数、Vxc势能。如果不做双重k网格计算，则可以跳过nscf步骤，并在后续的BSE步骤设置`bse_use_fine_kgrid  0`。
 
 3.用LibRPA做GW计算，并导出`energy_qp`、`EXX_band_spin_{index}.txt`、`KS_band_spin_{index}.txt`、`GW_band_spin_{index}.txt`，其中`index`是自旋序号，从1计数。
 
