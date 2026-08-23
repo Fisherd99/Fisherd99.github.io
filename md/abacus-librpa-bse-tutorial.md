@@ -88,7 +88,7 @@ cmake -B build -DLIBRPA_USE_LIBRI=ON \
 |------|------|----------|--------|
 | `rpa` | 输出第一节中所列举的其他所有文件 | 1 | 0 |
 | `rpa_out_vel` | 输出速度矩阵 | 1 | 0 |
-| `rpa_outdir` | 输出LibRPA所需文件的目录 | `./OUT.librpa/` | `./OUT.librpa/` |
+| `rpa_outdir` | 输出LibRPA所需文件的目录 | `OUT.librpa` | `OUT.librpa` |
 | `out_mat_xc` | 输出`vxc_out.dat`，后续会复制为`vxc_out` | 1 | 0 |
 | `exx_singularity_correction` | 设置为`massidda`后会计算`coulomb_mat_{rank}.txt`，它对库伦积分做截断的方式更完整 | `massidda` | `default` |
 | `exx_pca_threshold` | 设为10会跳过默认的辅助基构造，直接读取`.abfs`文件中预设的辅助基 | 10 | 1e-4 |
@@ -142,7 +142,8 @@ cmake -B build -DLIBRPA_USE_LIBRI=ON \
 | 参数 | 描述 | 本文取值 | 默认值 |
 |------|------|----------|--------|
 | `esolver_type` | 需设为`lr`，配合`xc_kernel bse`共同指定计算任务为BSE | `lr` | `ksdft` |
-| `read_file_dir` | SCF、NSCF预处理和LibRPA结果汇集目录 | `OUT.librpa` | `auto` |
+| `rpa_outdir` | SCF、NSCF预处理和LibRPA结果汇集目录 | `OUT.librpa` | `OUT.librpa` |
+| `read_file_dir` | BSE矩阵元、本征能、本征矢的读取目录，续算BSE时使用 | `OUT.bse` | `auto` |
 | `xc_kernel` | 需设为`bse`，配合`esolver_type lr`共同指定计算任务为BSE | `bse` | `lda` |
 | `lr_nstates` | 指定要求解的激发态的数量，`-1`表示全部求解 | -1 | 1 |
 | `nocc` | 指定计入电子空穴对的价带数量 | 4 | 自动（内部初值为-1） |
