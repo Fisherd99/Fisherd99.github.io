@@ -15,11 +15,11 @@ description: 方便新手快速上手
 ## 一、计算流程概览
 BSE的计算包含scf→nscf→GW→BSE四个步骤，所有步骤都写在示例包[example-k555-f666.tar.gz](/example-k555-f666.tar.gz)的`create.sh`脚本中。
 
-1.用ABACUS做scf计算，并导出`band_out`、`coulomb_cut_{rank}.txt`、`coulomb_mat_{rank}.txt`、`coulomb_unshrinked_cut_{rank}.txt`、`Cs_data_{rank}.txt`、`Cs_shrinked_data_{rank}.txt`、`KS_eigenvector_{index}.dat`、`shrink_sinvS_{rank}.txt`、`velocity_matrix`、`vxc_out`、`stru_out`，其中`rank`是MPI进程数，`index`是k点序号，均从0计数。
+1.用ABACUS做scf计算，并导出`band_out.txt`、`coulomb_cut_{rank}.txt`、`coulomb_mat_{rank}.txt`、`coulomb_unshrinked_cut_{rank}.txt`、`Cs_data_{rank}.txt`、`Cs_shrinked_data_{rank}.txt`、`KS_eigenvector.txt`、`shrink_sinvS_{rank}.txt`、`velocity_matrix.txt`、`vxc_out.txt`、`stru_out.txt`，其中`rank`是MPI进程编号，均从1计数。
 
 2.用ABACUS做nscf计算，并用`preprocess_abacus_for_librpa_band.py`导出`band_kpath_info`、`band_KS_eigenvalue_k_{index}.txt`、`band_KS_eigenvector_k_{index}.txt`、`band_vxc_k_{index}.txt`。这一步是为了后续从scf步骤中的稀疏k网格傅里叶插值到密集k网格，文件分别是密集k网格上的KS能级、KS波函数、Vxc势能。如果不做双重k网格计算，则可以跳过nscf步骤，并在后续的BSE步骤设置`bse_use_fine_kgrid  0`。
 
-3.用LibRPA做GW计算，并导出`energy_qp`、`EXX_band_spin_{index}.txt`、`KS_band_spin_{index}.txt`、`GW_band_spin_{index}.txt`，其中`index`是自旋序号，从1计数。
+3.用LibRPA做GW计算，并导出`energy_qp.txt`、`EXX_band_spin_{index}.txt`、`KS_band_spin_{index}.txt`、`GW_band_spin_{index}.txt`，其中`index`是自旋序号，从1计数。
 
 4.用ABACUS做BSE计算，在`OUT.bse/`中会出现`trans_dipole_{spin_type}_{tda|full}.dat`、`trans_analysis_{spin_type}_{tda|full}.dat`和激发能、激发振幅等文件，里面包含主要计算结果。
 ## 二、软件安装
@@ -134,7 +134,7 @@ cmake -B build -DLIBRPA_USE_LIBRI=ON \
 `create_continue.sh`会把`read_sigc_mat_rf`改为`t`，从已输出的自能矩阵续算；从头运行的`create.sh`则将其改回`f`。
 
 完成GW计算后，可以执行`plot_compare.py`，它会导出`gwband.png`，展示KS band和GW band在KPT_nscf中的k网格下的对比。
-<img src="/si_gwband.png" alt="Si的能带对比" style="width: 65%;">
+<img src="/abacus-librpa-bse-tutorial/si_gwband.png" alt="Si的能带对比" style="width: 65%;">
 
 ### 3.4 BSE
 #### INPUT_bse
@@ -202,7 +202,7 @@ $$
 \epsilon_{2}(\omega)=\sum_{S}\frac{4\pi^{2}}{N_{k}V}\left|\sum_{ai\bm{ k }}\frac{\langle i\bm{k}|\vec{v}|a\bm{k}\rangle}{E_a-E_i} X_{ai\bm{k}}^{S} + \frac{\langle a\bm{k}|\vec{v}|i\bm{k}\rangle}{E_i-E_a} Y_{ai\bm{k}}^{S}\right|^{2}\delta(\omega-\Omega_{S})
 $$
 其中$\delta$函数用洛伦兹展宽做了近似，展宽取为0.15eV。
-<img src="/si_absorption_spectrum.png" alt="Si吸收谱" style="width: 65%;">
+<img src="/abacus-librpa-bse-tutorial/si_absorption_spectrum.png" alt="Si吸收谱" style="width: 65%;">
 
 图中显示了Si的吸收谱，包含TDA（Tamm-Dancoff近似）和Full（完整BSE）两种计算结果。
 
@@ -267,7 +267,7 @@ $$
 使用ABACUS目录下的`tools/02_postprocessing/plot-tools/plot_exciton_silce.py`脚本，可以绘制slice格式的切片激子密度图。执行命令时在后面加上相应的`.dat`文件即可。
 
 <figure>
-  <img src="/si_exciton_slices/si_exciton_slices_2x2.png" alt="Si的切片激子密度图" style="width: 100%;">
+  <img src="/abacus-librpa-bse-tutorial/si_exciton_slices_2x2.png" alt="Si的切片激子密度图" style="width: 100%;">
   <figcaption>图：Si 的切片激子密度。(a) 平均电子密度；(b) 平均空穴密度；(c) 固定空穴坐标后的条件电子密度；(d) 固定电子坐标后的条件空穴密度。四幅图均为第 0 个激发态、ca平面切片；条件密度图的固定坐标为 (2.5, 2.5, 2.5) Bohr。</figcaption>
 </figure>
 
