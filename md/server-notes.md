@@ -341,26 +341,25 @@ https://github.com/abacusmodeling/LibComm.git
 ### ABACUS
 git clone -o fish https://github.com/Fisherd99/abacus-BSE.git
 ```shell
-cmake -B build -DELPA_DIR=/elpa安装目录/ -DCMAKE_INSTALL_PREFIX=/ABACUS安装目录/ -DENABLE_DEEPKS=1 -DENABLE_LIBRI=ON -DTorch_DIR=/Torch目录/ -Dlibnpy_INCLUDE_DIR=/libnpy目录/ -DLibxc_DIR=/libxc目录/ -DCEREAL_INCLUDE_DIR=$Path to the parent folder of `cereal/cereal.hpp`
+cmake -B build -DELPA_ROOT=/elpa安装目录/ -DCMAKE_INSTALL_PREFIX=/ABACUS安装目录/ -DENABLE_LIBRI=ON -DLibxc_ROOT=/libxc目录/ -Dcereal_ROOT=/cereal目录/
 % 具体例子：
-cmake -B build -DENABLE_ELPA=ON -DELPA_DIR=/opt/elpa_2025.06.001-install -DENABLE_LIBXC=ON -DLibxc_DIR=/opt/libxc-7.0.0-install -Dcereal_DIR=/opt/cereal-1.3.2-install -DENABLE_LIBRI=ON -DLIBRI_DIR=$HOME/deepmodeling/LibRI -DLIBCOMM_DIR=$HOME/deepmodeling/LibComm -DGTEST_DIR=$HOME/Downloads/googletest-1.17.0/install -DBUILD_TESTING=ON -DDEBUG_INFO=ON
+cmake -B build -DENABLE_ELPA=ON -DELPA_ROOT=/opt/elpa_2025.06.001-install -DENABLE_LIBXC=ON -DLibxc_ROOT=/opt/libxc-7.0.0-install -Dcereal_ROOT=/opt/cereal-1.3.2-install -DENABLE_LIBRI=ON -DLIBRI_DIR=$HOME/deepmodeling/LibRI -DLIBCOMM_DIR=$HOME/deepmodeling/LibComm -DGTEST_DIR=$HOME/Downloads/googletest-1.17.0/install -DBUILD_TESTING=ON -DDEBUG_INFO=ON
 
-cmake -B build_debug -DELPA_DIR=/opt/elpa_2025.06.001-install -DENABLE_LIBXC=ON -DLibxc_DIR=/opt/libxc-7.0.0-install -Dcereal_DIR=/opt/cereal-1.3.2-install -DENABLE_LIBRI=ON -DLIBRI_DIR=$HOME/deepmodeling/LibRI -DLIBCOMM_DIR=$HOME/deepmodeling/LibComm -DDEBUG_INFO=ON -DCMAKE_BUILD_TYPE=Debug
+cmake -B build_debug -DENABLE_ELPA=ON -DELPA_ROOT=/opt/elpa_2025.06.001-install -DENABLE_LIBXC=ON -DLibxc_ROOT=/opt/libxc-7.0.0-install -Dcereal_ROOT=/opt/cereal-1.3.2-install -DENABLE_LIBRI=ON -DLIBRI_DIR=$HOME/deepmodeling/LibRI -DLIBCOMM_DIR=$HOME/deepmodeling/LibComm -DDEBUG_INFO=ON -DCMAKE_BUILD_TYPE=Debug
 ------------------------------
 cmake --build build -j`nproc`
 cmake --build build_debug -j`nproc`
 cmake --install build
 ```
 ### LibRPA
-git clone https://github.com/minyez/LibRPA.git
+git clone https://github.com/AESM-Group/LibRPA
+
+LibRPA仓库现在继承了internal的cereal,LibRI,LibComm，可以不用单独指定这些库的目录。
 ```shell
 cmake -B build -DLIBRPA_USE_LIBRI=ON \
-    -DCEREAL_INCLUDE_DIR=/opt/cereal-1.3.2/include \
-    -DLIBRI_INCLUDE_DIR=$HOME/deepmodeling/LibRI/include \
-    -DLIBCOMM_INCLUDE_DIR=$HOME/deepmodeling/LibComm/include \
     -DCMAKE_CXX_FLAGS="-DLIBRPA_VERBOSE"
-    
-cmake -B build_debug -DUSE_LIBRI=ON \
+
+cmake -B build_debug -DLIBRPA_USE_LIBRI=ON \
     -DCEREAL_INCLUDE_DIR=/opt/cereal-1.3.2/include \
     -DLIBRI_INCLUDE_DIR=$HOME/deepmodeling/LibRI/include \
     -DLIBCOMM_INCLUDE_DIR=$HOME/deepmodeling/LibComm/include \

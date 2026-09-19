@@ -40,14 +40,11 @@ git clone https://github.com/abacusmodeling/LibRI.git
 #### LibRPA
 BSE基于GW的计算结果，GW需要用LibRPA执行
 ```sh
-git clone https://github.com/Srlive1201/LibRPA
+git clone https://github.com/AESM-Group/LibRPA
 ```
-使用文档见[https://srlive1201.github.io/LibRPA](https://srlive1201.github.io/LibRPA)，以下提供自用的cmake命令
+使用文档见[https://aesm-group.github.io/LibRPA/](https://aesm-group.github.io/LibRPA/)，以下提供自用的cmake命令
 ```sh
 cmake -B build -DLIBRPA_USE_LIBRI=ON \
-    -DCEREAL_INCLUDE_DIR=$CEREAL_PATH/include \
-    -DLIBRI_INCLUDE_DIR=$LibRI_PATH/include \
-    -DLIBCOMM_INCLUDE_DIR=$LibComm_PATH/include \
     -DCMAKE_CXX_FLAGS="-DLIBRPA_VERBOSE"
 ```
 ## 三、执行计算任务
