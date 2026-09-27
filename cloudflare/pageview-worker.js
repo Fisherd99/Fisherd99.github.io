@@ -317,6 +317,14 @@ const handleFetch = async (request, env) => {
     if (rateLimited) {
       return json({ error: 'rate_limited' }, 429, allowedOrigin)
     }
+    if (counted) {
+      console.log(JSON.stringify({
+        event: 'pageview_ip_recorded',
+        clientIp: request.headers.get('CF-Connecting-IP') ?? 'unknown',
+        pagePath,
+        rayId: request.headers.get('CF-Ray') ?? null
+      }))
+    }
     const history = await getHistory(env, pagePath)
     return json({ ok: true, counted, ...history }, 200, allowedOrigin)
   }

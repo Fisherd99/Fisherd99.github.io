@@ -5,6 +5,7 @@ import HomeArticlesAuto from './HomeArticlesAuto.vue'
 import LazyGiscus from './LazyGiscus.vue'
 import PageViewTrend from './PageViewTrend.vue'
 import CloudflareVisitorMap from './CloudflareVisitorMap.vue'
+import MapMyVisitors from './MapMyVisitors.vue'
 import { useData, useRoute } from 'vitepress'
 
 const { isDark } = useData()
@@ -159,6 +160,7 @@ watch(
             :loading="cfLoading"
             :error="cfError"
           />
+          <MapMyVisitors :is-dark="isDark" />
         </div>
         <LazyGiscus :key="route.path" :theme="isDark ? 'dark' : 'light'" />
       </div>
@@ -188,7 +190,7 @@ watch(
 
 .analytics-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(180px, 280px);
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 320px) minmax(180px, 280px);
   gap: 16px;
   align-items: stretch;
 }
@@ -204,6 +206,16 @@ watch(
 
   .analytics-row :deep(.visitor-map) {
     margin-top: -10px;
+  }
+}
+
+@media (min-width: 701px) and (max-width: 900px) {
+  .analytics-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analytics-row :deep(.pageview-trend) {
+    grid-column: 1 / -1;
   }
 }
 

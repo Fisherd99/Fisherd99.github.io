@@ -520,6 +520,15 @@
   backdrop-filter: blur(8px);
 }
 
+/* Keep search compact and adjacent to the right-aligned navigation links. */
+@media (min-width: 768px) {
+  .VPNavBar .VPNavBarSearch {
+    flex-grow: 0;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
 /* Desktop menu hover enhancement */
 @media (min-width: 960px) {
   /* Auto-expand dropdown on hover */

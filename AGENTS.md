@@ -24,6 +24,8 @@ vitepress/
 │   │   ├── LazyGiscus.vue        # Lazy-loaded comments
 │   │   ├── PageViewTrend.vue     # 60-day page-view chart
 │   │   ├── CloudflareVisitorMap.vue # Cloudflare geolocation visitor map
+│   │   ├── world-map-geo.js      # Simplified Natural Earth lon/lat geometry
+│   │   ├── world-map-data.NOTICE.md # Map data source and license
 │   │   ├── index.ts              # Theme entry and browser integrations
 │   │   └── MyLayout.vue          # Layout and analytics UI
 │   ├── cache/                    # VitePress build cache
@@ -103,7 +105,16 @@ specify dimensions and lazy loading on raw `<img>` elements.
 - One page-load POST returns the total, recent reads, trend points, and global
   visitor locations. Keep this single-roundtrip design.
 - Visitor geography comes from `request.cf`; coordinates are rounded before D1
-  storage and raw IP addresses are never stored.
+  storage. Raw IPs are excluded from D1 and client responses; a structured
+  Workers Log records the IP only when a page view is counted. Cloudflare Logs
+  retention is short (3 days on Free, 7 days on Paid); restrict dashboard access.
+- The Cloudflare map uses local Natural Earth longitude/latitude geometry and
+  projects it directly in `CloudflareVisitorMap.vue` with the equirectangular
+  formula. Land outlines and `request.cf` coordinates share the antimeridian
+  seam and the -90° to 90° latitude range. Cloudflare city coordinates are
+  approximate and can fall just offshore, especially after coordinate
+  rounding; do not shift a point to land because that would misrepresent it.
+  MapMyVisitors remains an optional third-party reference map loaded separately.
 - Cloudflare Web Analytics is a separate private dashboard source. Do not
   backfill or merge its historical country data into the D1 visitor map.
 - Busuanzi is retained only as a clearly labeled third-party reference count.
