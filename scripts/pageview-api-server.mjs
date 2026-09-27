@@ -59,8 +59,10 @@ const normalizePath = (rawPath) => {
   if (!rawPath || typeof rawPath !== 'string') {
     return '/'
   }
-  const clean = rawPath.trim().split('#')[0].split('?')[0] || '/'
-  return clean.startsWith('/') ? clean : `/${clean}`
+  let clean = rawPath.trim().split('#')[0].split('?')[0] || '/'
+  if (!clean.startsWith('/')) clean = `/${clean}`
+  if (clean.length > 1) clean = clean.replace(/\/+$/, '')
+  return clean.endsWith('.html') ? clean.slice(0, -5) || '/' : clean
 }
 
 const nowBucket = () => {

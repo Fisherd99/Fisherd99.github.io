@@ -97,6 +97,9 @@ specify dimensions and lazy loading on raw `<img>` elements.
 - Cloudflare Worker + D1 is the authoritative page-view source. Counters are
   atomic, keyed by normalized article path, and protected by deduplication and
   rate limiting.
+- Article URLs and new page-view writes use extensionless paths (for example,
+  `/gdb`). `.html` requests normalize to that same key for compatibility, and
+  history reads include previously stored `.html` rows.
 - One page-load POST returns the total, recent reads, trend points, and global
   visitor locations. Keep this single-roundtrip design.
 - Visitor geography comes from `request.cf`; coordinates are rounded before D1

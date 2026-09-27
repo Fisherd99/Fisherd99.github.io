@@ -8,7 +8,7 @@ const MAX_TRACKS_PER_WINDOW = 30
 const MAX_PATH_LENGTH = 128
 const MAX_BODY_BYTES = 1024
 const MAX_MAP_POINTS = 48
-const ARTICLE_PATH_PATTERN = /^\/(?:[a-z0-9]+(?:-[a-z0-9]+)*)?$/
+const ARTICLE_PATH_PATTERN = /^\/(?:[a-z0-9]+(?:-[a-z0-9]+)*(?:\.html)?)?$/
 
 const getAllowedOrigin = (request, env) => {
   const origin = request.headers.get('Origin')
@@ -60,7 +60,8 @@ const normalizePath = (rawPath) => {
   if (clean.length > MAX_PATH_LENGTH || !ARTICLE_PATH_PATTERN.test(clean)) {
     return null
   }
-  return clean
+
+  return clean.endsWith('.html') ? clean.slice(0, -5) || '/' : clean
 }
 
 const bucketNow = () => Math.floor(Date.now() / HALF_HOUR_MS) * HALF_HOUR_MS
@@ -211,28 +212,29 @@ const trackPageview = async (request, env, pagePath) => {
 const getHistory = async (env, pagePath) => {
   const firstDay = Math.floor(Date.now() / DAY_MS) * DAY_MS - (HISTORY_DAYS - 1) * DAY_MS
   const recentStart = bucketNow() - (RECENT_BUCKETS - 1) * HALF_HOUR_MS
+  const legacyPath = pagePath === '/' ? pagePath : `${pagePath}.html`
   const [totalResult, historyResult, recentResult, locationsResult] = await env.DB.batch([
     env.DB
-      .prepare('SELECT total FROM pageview_totals WHERE path = ?1')
-      .bind(pagePath),
+      .prepare('SELECT COALESCE(SUM(total), 0) AS total FROM pageview_totals WHERE path IN (?1, ?2)')
+      .bind(pagePath, legacyPath),
     env.DB
       .prepare(`
         SELECT
-          CAST(bucket_ts / ?2 AS INTEGER) * ?2 AS ts,
+          CAST(bucket_ts / ?3 AS INTEGER) * ?3 AS ts,
           SUM(views) AS value
         FROM pageview_buckets
-        WHERE path = ?1 AND bucket_ts >= ?3
-        GROUP BY CAST(bucket_ts / ?2 AS INTEGER)
+        WHERE path IN (?1, ?2) AND bucket_ts >= ?4
+        GROUP BY CAST(bucket_ts / ?3 AS INTEGER)
         ORDER BY ts ASC
       `)
-      .bind(pagePath, DAY_MS, firstDay),
+      .bind(pagePath, legacyPath, DAY_MS, firstDay),
     env.DB
       .prepare(`
         SELECT COALESCE(SUM(views), 0) AS views
         FROM pageview_buckets
-        WHERE path = ?1 AND bucket_ts >= ?2
+        WHERE path IN (?1, ?2) AND bucket_ts >= ?3
       `)
-      .bind(pagePath, recentStart),
+      .bind(pagePath, legacyPath, recentStart),
     env.DB
       .prepare(`
         SELECT country_code, region, city, latitude, longitude, views

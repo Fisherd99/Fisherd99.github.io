@@ -27,6 +27,7 @@ const cloudflareAnalyticsHead = [
 export default defineConfig({
   srcDir: "./md",
   base: "/",
+  cleanUrls: true,
   lang: "zh-CN",
   head: [...pageviewHead, ...cloudflareAnalyticsHead],
   title: "卷心菜农场 —— Fisherd's blog",
