@@ -22,26 +22,20 @@ Created by [VitePress](https://vitepress.dev/zh/)
 
 ## 🚀 Quick Start
 
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run docs:dev
-
-# Build for production
-npm run docs:build
-```
+| Comand | Notation |
+|------|------|
+| `npm install` | Install dependencies |
+| `npm run docs:dev` | Start development server |
+| `npm run docs:build` | Build for production |
+| `npm run generate-nav` | Generate Navigation |
+| `npm run generate-articles` | Generate Articles List for home page |
 
 See [AGENTS.md](./AGENTS.md) for detailed documentation on adding articles and managing content.
 
-## 快速参考
 
-### 添加新文章的完整步骤
+## 导航自动更新机制
 
-1. **创建文件**: 在 `md/` 目录创建 `.md` 文件
-
-2. **添加 frontmatter**:
+**为文章添加 frontmatter**:
 ```markdown
 ---
 title: 文章标题
@@ -55,47 +49,6 @@ tags:
 description: 文章描述
 ---
 ```
-
-3. **运行命令**:
-```bash
-npm run docs:dev    # 开发模式
-npm run docs:build  # 构建部署
-```
-
-4. **自动更新**:
-   - 文章会自动出现在首页对应分类
-   - 导航栏会自动更新
-
-### 可用命令
-
-| 命令 | 说明 |
-|------|------|
-| `npm run docs:dev` | 启动开发服务器（自动生成配置）|
-| `npm run docs:build` | 构建生产版本（自动生成配置）|
-| `npm run generate-nav` | 手动生成导航配置 |
-| `npm run generate-articles` | 手动生成文章列表 |
-
-### 项目结构
-
-```
-vitepress/
-├── .github/
-│   └── workflows/                # GitHub Pages deployment
-├── .vitepress/
-│   ├── config.mts                # VitePress site configuration
-│   ├── nav-config.js             # Auto-generated navigation (DO NOT EDIT)
-│   ├── theme/                    # Custom layout and styles
-│       └── HomeArticlesAuto.vue  # Customized home page
-│   ├── cache/                    # VitePress build cache
-│   └── dist/                     # Built site output
-├── md/                           # Content source directory
-│   ├── public/                   # Static assets (images, articles.json)
-│   └── *.md                      # Markdown articles + homepage
-├── public/
-│   └── articles.json             # Auto-generated article metadata
-├── package.json                  # Dependencies and scripts
-├── generate-articles-list.js     # Script to generate articles list
-├── generate-nav-config.js        # Script to generate nav config
-├── UPDATE_LOG.md                 # Unified update changelog
-└── AGENTS.md                     # File for AI Agents.
-```
+运行构建命令`npm run docs:dev`或`npm run docs:build`后:
+- 文章会自动出现在首页对应分类
+- 导航栏会自动更新

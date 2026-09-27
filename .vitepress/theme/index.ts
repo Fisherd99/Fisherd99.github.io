@@ -48,7 +48,7 @@ export default {
       const lastUpdated = document.createElement('p')
       const time = document.createElement('time')
       lastUpdated.className = 'title-last-updated'
-      lastUpdated.append('Updated at: ')
+      lastUpdated.append('更新于: ')
       time.dateTime = new Date(timestamp).toISOString()
       time.textContent = new Intl.DateTimeFormat('zh-CN', {
         dateStyle: 'full',

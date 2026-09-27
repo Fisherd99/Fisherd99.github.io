@@ -124,7 +124,15 @@ const server = http.createServer(async (req, res) => {
           await writeDb(db)
           return current
         })
-        sendJson(res, 200, { ok: true, path: pagePath, total: item.total })
+        sendJson(res, 200, {
+          ok: true,
+          counted: true,
+          path: pagePath,
+          total: item.total,
+          recent24h: getRecentReads(item),
+          points: toHistoryPoints(item),
+          locations: []
+        })
       } catch (error) {
         sendJson(res, 500, { error: String(error) })
       }
@@ -141,7 +149,8 @@ const server = http.createServer(async (req, res) => {
         path: pagePath,
         total: item.total,
         recent24h: getRecentReads(item),
-        points: toHistoryPoints(item)
+        points: toHistoryPoints(item),
+        locations: []
       })
     } catch (error) {
       sendJson(res, 500, { error: String(error) })

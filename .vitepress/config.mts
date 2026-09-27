@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitepress'
 import { katex } from '@mdit/plugin-katex'
-import { navConfig, sidebarConfig } from './nav-config.js'
+import { navConfig, sidebarConfig } from './generated/nav-config.js'
 
 const pageviewApiBase = (process.env.PAGEVIEW_API_BASE ?? 'https://fisherd-pageview-api.fisherd.workers.dev').replace(/\/$/, '')
 const pageviewHead = pageviewApiBase

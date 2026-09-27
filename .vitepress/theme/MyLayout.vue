@@ -4,6 +4,7 @@ import DefaultTheme from 'vitepress/theme'
 import HomeArticlesAuto from './HomeArticlesAuto.vue'
 import LazyGiscus from './LazyGiscus.vue'
 import PageViewTrend from './PageViewTrend.vue'
+import CloudflareVisitorMap from './CloudflareVisitorMap.vue'
 import { useData, useRoute } from 'vitepress'
 
 const { isDark } = useData()
@@ -14,21 +15,10 @@ const cfPageViews = ref('加载中...')
 const cfRecentReads = ref('加载中...')
 const cfStatus = ref('')
 const cfHistoryPoints = ref([])
+const cfVisitorLocations = ref([])
 const cfLoading = ref(true)
 const cfError = ref(false)
-const mapContainer = ref(null)
 let statsRequestId = 0
-
-const loadMapMyVisitors = () => {
-  if (!mapContainer.value || document.getElementById('mapmyvisitors')) return
-
-  const script = document.createElement('script')
-  script.id = 'mapmyvisitors'
-  script.type = 'text/javascript'
-  script.src = 'https://mapmyvisitors.com/map.js?cl=0e1633&w=a&t=tt&d=vI6kFKqVuy9qV_ohB4mdDaJhBxJn0m-VmrLLdRa1IHA&co=0b4975&ct=cdd4d9&cmo=3acc3a&cmn=ff5353'
-  script.async = true
-  mapContainer.value.appendChild(script)
-}
 
 const normalizePath = (rawPath) => {
   const clean = (rawPath ?? '/').split('#')[0].split('?')[0] || '/'
@@ -64,9 +54,8 @@ const syncCloudflareStats = async () => {
   const requestId = ++statsRequestId
   const pagePath = normalizePath(route.path)
   const trackUrl = resolveApiUrl('pageview-track-api')
-  const historyUrl = resolveApiUrl('pageview-history-api')
 
-  if (!trackUrl || !historyUrl || typeof window === 'undefined') {
+  if (!trackUrl || typeof window === 'undefined') {
     cfPageViews.value = '未配置'
     cfRecentReads.value = '未配置'
     cfStatus.value = 'Cloudflare API 未配置'
@@ -90,15 +79,7 @@ const syncCloudflareStats = async () => {
       throw new Error(`Track HTTP ${trackResponse.status}`)
     }
 
-    const url = new URL(historyUrl)
-    url.searchParams.set('path', pagePath)
-
-    const response = await fetch(url.toString(), { cache: 'no-store' })
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
-    }
-
-    const payload = await response.json()
+    const payload = await trackResponse.json()
     if (requestId !== statsRequestId) {
       return
     }
@@ -108,6 +89,7 @@ const syncCloudflareStats = async () => {
     cfPageViews.value = String(total)
     cfRecentReads.value = Number.isFinite(recentReads) ? String(recentReads) : '0'
     cfHistoryPoints.value = Array.isArray(payload?.points) ? payload.points : []
+    cfVisitorLocations.value = Array.isArray(payload?.locations) ? payload.locations : []
     cfStatus.value = `Cloudflare 统计已更新（更新时间：${formatUpdateTime(Date.now())}）`
   } catch {
     if (requestId !== statsRequestId) {
@@ -116,6 +98,7 @@ const syncCloudflareStats = async () => {
     cfPageViews.value = '获取失败'
     cfRecentReads.value = '获取失败'
     cfHistoryPoints.value = []
+    cfVisitorLocations.value = []
     cfError.value = true
     cfStatus.value = 'Cloudflare 请求失败（请检查 Worker / 网络）'
   } finally {
@@ -127,7 +110,6 @@ const syncCloudflareStats = async () => {
 
 onMounted(() => {
   void syncCloudflareStats()
-  loadMapMyVisitors()
 })
 
 watch(
@@ -135,7 +117,6 @@ watch(
   () => {
     nextTick(() => {
       void syncCloudflareStats()
-      loadMapMyVisitors()
     })
   }
 )
@@ -171,16 +152,11 @@ watch(
             :loading="cfLoading"
             :error="cfError"
           />
-          <section class="visitor-map" aria-labelledby="visitor-map-title">
-            <div id="visitor-map-title" class="visitor-map-title" role="heading" aria-level="2">
-              访客地图
-            </div>
-            <div
-              ref="mapContainer"
-              class="visitor-map-content"
-              aria-label="MapMyVisitors 访客地图"
-            ></div>
-          </section>
+          <CloudflareVisitorMap
+            :locations="cfVisitorLocations"
+            :loading="cfLoading"
+            :error="cfError"
+          />
         </div>
         <LazyGiscus :key="route.path" :theme="isDark ? 'dark' : 'light'" />
       </div>
@@ -219,44 +195,12 @@ watch(
   min-width: 0;
 }
 
-.visitor-map {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  max-width: 100%;
-  height: 220px;
-  margin: 18px 0 26px;
-  padding: 16px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 10px;
-  background: var(--vp-c-bg-soft);
-}
-
-.visitor-map-title {
-  align-self: flex-start;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-.visitor-map-content {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 0;
-}
-
-.visitor-map-content :deep(#mapmyvisitors-widget) {
-  max-width: 100%;
-}
-
 @media (max-width: 700px) {
   .analytics-row {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .visitor-map {
+  .analytics-row :deep(.visitor-map) {
     margin-top: -10px;
   }
 }

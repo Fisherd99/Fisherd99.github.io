@@ -5,18 +5,18 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "docs:dev": "node generate-articles-list.js && node generate-nav-config.js && vitepress dev",
-    "docs:build": "node generate-articles-list.js && node generate-nav-config.js && vitepress build",
+    "docs:dev": "node scripts/generate-articles-list.js && node scripts/generate-nav-config.js && vitepress dev",
+    "docs:build": "node scripts/generate-articles-list.js && node scripts/generate-nav-config.js && vitepress build",
     "docs:preview": "vitepress preview",
-    "generate-nav": "node generate-nav-config.js",
-    "generate-articles": "node generate-articles-list.js",
+    "generate-nav": "node scripts/generate-nav-config.js",
+    "generate-articles": "node scripts/generate-articles-list.js",
     "pageview:api": "node scripts/pageview-api-server.mjs",
-    "cf:pageview:dev": "npx wrangler dev cloudflare/pageview-worker.js --config cloudflare/wrangler.toml",
-    "cf:pageview:deploy": "npx wrangler deploy --config cloudflare/wrangler.toml",
-    "cf:pageview:d1:create": "npx wrangler d1 create fisherd-pageview-db --config cloudflare/wrangler.toml",
-    "cf:pageview:d1:info": "npx wrangler d1 info DB --config cloudflare/wrangler.toml",
-    "cf:pageview:d1:migrate": "npx wrangler d1 execute DB --remote --config cloudflare/wrangler.toml --file cloudflare/schema.sql",
-    "cf:pageview:d1:migrate:local": "npx wrangler d1 execute DB --local --config cloudflare/wrangler.toml --file cloudflare/schema.sql"
+    "cf:pageview:dev": "wrangler dev cloudflare/pageview-worker.js --config cloudflare/wrangler.toml",
+    "cf:pageview:deploy": "wrangler deploy --config cloudflare/wrangler.toml",
+    "cf:pageview:d1:create": "wrangler d1 create fisherd-pageview-db --config cloudflare/wrangler.toml",
+    "cf:pageview:d1:info": "wrangler d1 info DB --config cloudflare/wrangler.toml",
+    "cf:pageview:d1:migrate": "wrangler d1 execute DB --remote --config cloudflare/wrangler.toml --file cloudflare/schema.sql",
+    "cf:pageview:d1:migrate:local": "wrangler d1 execute DB --local --config cloudflare/wrangler.toml --file cloudflare/schema.sql"
   },
   "keywords": [],
   "author": "",
@@ -26,7 +26,8 @@
     "katex": "^0.16.22",
     "markdown-it": "^14.1.0",
     "medium-zoom": "^1.1.0",
-    "vitepress": "^2.0.0-alpha.12"
+    "vitepress": "^2.0.0-alpha.12",
+    "wrangler": "4.141.0"
   },
   "dependencies": {
     "@giscus/vue": "^3.1.1"

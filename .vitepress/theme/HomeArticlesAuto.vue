@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import articlesData from '../../public/articles.json'
+import articlesData from '../generated/articles.json'
 
 const categoryConfig = [
   { title: '物理', id: 'physics', icon: '📚' },

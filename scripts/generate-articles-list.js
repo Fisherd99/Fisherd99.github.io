@@ -1,20 +1,20 @@
 /**
  * 自动从 md 文件生成文章列表 JSON 文件
- * 运行方式：node generate-articles-list.js
+ * 运行方式：node scripts/generate-articles-list.js
  */
 
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { getAllMarkdownFiles, parseFrontmatter } from './scripts/content-utils.mjs'
+import { getAllMarkdownFiles, parseFrontmatter } from './content-utils.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const projectRoot = path.resolve(__dirname, '..')
 
-const mdDir = path.join(__dirname, 'md')
-const outputFile = path.join(__dirname, 'public', 'articles.json')
+const mdDir = path.join(projectRoot, 'md')
+const outputFile = path.join(projectRoot, '.vitepress', 'generated', 'articles.json')
 
-// 生成文章列表
 function generateArticlesList() {
   console.log('📂 扫描 markdown 文件...')
 
@@ -43,17 +43,12 @@ function generateArticlesList() {
     console.log(`  ✓ ${frontmatter.title} (${frontmatter.categories})`)
   }
 
-  // 按日期排序（最新在前）
   articles.sort((a, b) => new Date(b.date) - new Date(a.date))
-
-  // 写入 JSON 文件
+  fs.mkdirSync(path.dirname(outputFile), { recursive: true })
   fs.writeFileSync(outputFile, JSON.stringify(articles, null, 2), 'utf-8')
 
   console.log(`\n✅ 已生成文章列表: ${outputFile}`)
   console.log(`📊 共 ${articles.length} 篇文章`)
-
-  return articles
 }
 
-// 运行
 generateArticlesList()

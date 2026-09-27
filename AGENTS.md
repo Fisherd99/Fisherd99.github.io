@@ -1,218 +1,117 @@
-# AGENTS.md
-# Repository guidance for agentic coding tools
+# VitePress Blog Guide
 
-## Project Overview
-- VitePress-based personal blog with automated content management.
-- Source content lives in `md/` (configured as VitePress srcDir).
-- Navigation and article lists are auto-generated from frontmatter.
-- Primary language is zh-CN; keep filenames English for clean URLs.
+## Project
 
+- Personal zh-CN VitePress blog deployed to GitHub Pages from `master`.
+- Markdown sources are in `md/`; article filenames should use English kebab-case.
+- Navigation and the homepage article list are generated from frontmatter.
+- The project uses ES modules and Node.js 22 in CI.
+
+## Main structure
 ## Code Architecture
 ```
 vitepress/
 ├── .github/
 │   └── workflows/                # GitHub Pages deployment
 ├── .vitepress/
-│   ├── config.mts                # VitePress site configuration
-│   ├── nav-config.js             # Auto-generated navigation (DO NOT EDIT)
+│   ├── config.mts                # Site configuration
+│   ├── generated/                # Auto-generated build inputs (DO NOT EDIT)
+│   │   ├── articles.json         # Homepage article metadata
+│   │   └── nav-config.js         # Navigation and sidebar config
 │   ├── theme/                    # Custom layout and styles
-│   │   ├── custom.css            # Color styles
-│   │   ├── HomeArticlesAuto.vue  # Customized home page
+│   │   ├── custom.css            # Global theme styles
+│   │   ├── HomeArticlesAuto.vue  # Homepage article list
 │   │   ├── LazyGiscus.vue        # Lazy-loaded comments
 │   │   ├── PageViewTrend.vue     # 60-day page-view chart
-│   │   ├── index.ts              # Theme entry
-│   │   └── MyLayout.vue          # Layout wrapper
+│   │   ├── CloudflareVisitorMap.vue # Cloudflare geolocation visitor map
+│   │   ├── index.ts              # Theme entry and browser integrations
+│   │   └── MyLayout.vue          # Layout and analytics UI
 │   ├── cache/                    # VitePress build cache
 │   └── dist/                     # Built site output
 ├── md/                           # Content source directory
-│   ├── public/                   # Static assets (images, articles.json)
+│   ├── public/                   # Static assets (images)
 │   └── *.md                      # Markdown articles + homepage
-├── public/
-│   └── articles.json             # Auto-generated article metadata
 ├── package.json                  # Dependencies and scripts
 ├── scripts/
-│   └── content-utils.mjs         # Shared frontmatter/file helpers
-├── cloudflare/                   # Page-view Worker, D1 schema, Wrangler config
-├── generate-articles-list.js     # Script to generate articles list
-├── generate-nav-config.js        # Script to generate nav config
+│   ├── content-utils.mjs         # Shared frontmatter/file helpers
+│   ├── generate-articles-list.js # Generate homepage article metadata
+│   ├── generate-nav-config.js    # Generate navigation and sidebar config
+│   └── pageview-api-server.mjs   # Local page-view API fallback
+├── cloudflare/
+│   ├── pageview-worker.js        # Page views, anti-abuse, history, visitor locations
+│   ├── schema.sql                # D1 counters, buckets, dedupe, rate limits, locations
+│   └── wrangler.toml             # Worker bindings, observability, and Cron trigger
 ├── UPDATE_LOG.md                 # Unified update changelog
 └── AGENTS.md                     # File for AI Agents.
 ```
 
-## Key Paths
-- `md/` content sources (Markdown articles, images under `md/public/`).
-- `.vitepress/config.mts` site configuration (ESM/TypeScript).
-- `.vitepress/nav-config.js` auto-generated nav/sidebar (DO NOT EDIT).
-- `public/articles.json` auto-generated article metadata (DO NOT EDIT).
-- `generate-articles-list.js` and `generate-nav-config.js` generation scripts.
-- `.vitepress/theme/` custom theme components and styles.
+Do not edit generated files directly:
 
-## Build Dependencies
-The VitePress site uses:
-- VitePress ^2.0.0-alpha.12
-- Build-time math rendering with `@mdit/plugin-katex` and KaTeX
-- Medium-zoom for image zooming
-- Giscus for comments
+- `.vitepress/generated/nav-config.js`
+- `.vitepress/generated/articles.json`
+- `.vitepress/dist/` and `.vitepress/cache/`
 
-## Build / Dev / Preview Commands
-- Install deps: `npm install`
-- Dev server: `npm run docs:dev`
-- Build: `npm run docs:build`
-- Preview build: `npm run docs:preview`
-- Generate nav only: `npm run generate-nav`
-- Generate articles only: `npm run generate-articles`
+## Commands
 
-## Lint / Test Commands
-- No linting scripts configured in `package.json`.
-- No automated test suite in this repo.
-- Single-test execution: not applicable (no test runner configured).
+```bash
+npm install
+npm run docs:dev
+npm run docs:build
+npm run docs:preview
+npm run generate-nav
+npm run generate-articles
+npm run pageview:api
+npm run cf:pageview:dev
+npm run cf:pageview:d1:migrate:local
+npm run cf:pageview:d1:migrate
+npm run cf:pageview:deploy
+```
 
-## Automation Rules (Do Not Edit Generated Files)
-- `.vitepress/nav-config.js` is generated. Edit source frontmatter and re-run.
-- `public/articles.json` is generated. Edit source frontmatter and re-run.
-- Running `npm run docs:dev` or `npm run docs:build` regenerates both.
-- `.vitepress/dist` is build output; never edit by hand.
+There is no separate lint or automated test suite. Use `npm run docs:build` as
+the baseline verification and exercise Worker endpoints when analytics changes.
 
-## Content Authoring Guidelines
-- All Markdown articles must include frontmatter (see Frontmatter Reference).
-- Put articles in `md/` (not `md/public/`).
-- Keep filenames in English (kebab-case preferred) for clean URLs.
-- Images go to `md/public/images/` and referenced via relative paths.
+## Content
 
-## Code Style Guidelines
+Articles belong in `md/` and require frontmatter like:
 
-### General
-- Prefer clarity and minimalism; follow existing patterns.
-- Use ES Modules ("type": "module" in `package.json`).
-- Keep changes focused; avoid reformatting unrelated code.
-
-### JavaScript / TypeScript
-- Match existing formatting (2-space indentation in JS/JSON files).
-- Use `const` by default; `let` only when reassignment is required.
-- Prefer explicit, descriptive names (`generate-articles-list.js` style).
-- Avoid introducing new dependencies unless necessary.
-- Use standard Node ESM imports (`import ... from ...`).
-
-### VitePress / Theme
-- `config.mts` and theme files use VitePress defaults plus small extensions.
-- Do not edit `.vitepress/nav-config.js` directly.
-- For UI changes, check `.vitepress/theme/index.ts`, `MyLayout.vue`, and
-  `custom.css` for extension points.
-
-### Markdown
-- Keep headings and content in zh-CN, matching existing articles.
-- Use fenced code blocks with language hints (e.g., `bash`, `ts`).
-- LaTeX math is rendered at build time by KaTeX (`$$...$$` for blocks, `$...$` inline).
-- Prefer optimized WebP previews for large images, retain the original in
-  `data-zoom-src`, and include `width`, `height`, `loading="lazy"`, and
-  `decoding="async"` on raw `<img>` elements.
-
-## Naming Conventions
-- Filenames: English, kebab-case (e.g., `server-notes.md`).
-- Frontmatter `categories`: one of `物理`, `计算机`, `生活`.
-- Tags: short, human-readable, consistent with existing posts.
-
-## Git / Workflow Notes
-- No commit hooks defined in this repo.
-- Commit messages use simple present tense (add/update/fix/etc.).
-- Deployment runs via GitHub Actions on `master` branch.
-
-## Quick Checklist for Agents
-- Update only source Markdown and configs; regenerate nav/articles via scripts.
-- Keep filenames English; titles can stay Chinese.
-
+```yaml
 ---
+title: Article Title
+lang: zh-CN
+date: YYYY-MM-DD
+author: Fisherd
+categories: 物理 # 物理 / 计算机 / 生活
+tags:
+  - tag
+description: Article description
+---
+```
 
-# Fisherd VitePress Blog Patterns
+- Missing frontmatter or `categories` excludes an article from generated lists.
+- Prefer optimized WebP previews, retain the original via `data-zoom-src`, and
+specify dimensions and lazy loading on raw `<img>` elements.
+- KaTeX renders mathematics at build time.
 
-## Overview
+## Analytics invariants
 
-This is a personal documentation blog built with VitePress, focusing on
-physics (computational materials science, k-point analysis) and computer
-science topics. The site is deployed to GitHub Pages.
+- Cloudflare Worker + D1 is the authoritative page-view source. Counters are
+  atomic, keyed by normalized article path, and protected by deduplication and
+  rate limiting.
+- One page-load POST returns the total, recent reads, trend points, and global
+  visitor locations. Keep this single-roundtrip design.
+- Visitor geography comes from `request.cf`; coordinates are rounded before D1
+  storage and raw IP addresses are never stored.
+- Cloudflare Web Analytics is a separate private dashboard source. Do not
+  backfill or merge its historical country data into the D1 visitor map.
+- Busuanzi is retained only as a clearly labeled third-party reference count.
+- Preserve existing D1 totals during schema changes. Apply `schema.sql` before
+  deploying Worker code that depends on new tables or columns.
+- Production errors must not expose internal details. Logs and traces remain
+  enabled through `wrangler.toml`.
 
-Key feature: Fully automated content management using frontmatter-based
-metadata extraction.
+## Maintenance
 
-## Workflows
-
-### Automated Content Management
-
-1. Article List Auto-Generation (`generate-articles-list.js`)
-   - Scans markdown files for frontmatter
-   - Generates `public/articles.json` for homepage
-   - Auto-runs on `npm run docs:dev` and `npm run docs:build`
-
-2. Navigation Auto-Generation (`generate-nav-config.js`)
-   - Generates nav/sidebar from frontmatter `categories`
-   - Outputs to `.vitepress/nav-config.js` (auto-imported)
-   - Auto-runs with dev server and build
-
-### Adding a New Article
-
-Steps:
-1. Create markdown file in `md/` with frontmatter
-2. Run `npm run docs:dev` or `npm run docs:build`
-3. Article will automatically appears in nav + homepage
-
-### Update and Deploying to GitHub Pages
-
-- Trigger: push to `master` (GitHub Actions)
-- Build uses Node.js 22 on `ubuntu-latest`
-- Update Log `vitepress/UPDATE_LOG.md` in these formats in Chinese and English:
-  ```markdown
-  # 更新日志
-
-  ## YYYY-MM-DD - Feature Name
-
-  ### 新增功能
-  - Feature 1
-  - Feature 2
-
-  ### 文件变更
-  - 新增: file.js
-  - 更新: file2.js
-  - 删除: old_file.js
-  ```
-- When git commit, follow these **commit conventions** in English:
-  ```markdown
-  - `add` - Adding new content or features
-  - `update` - Updating existing content
-  - `fix` - Fixing bugs or errors
-  - `enable` - Enabling features
-  - `change` - Making changes to configuration
-
-  Examples:
-  - `add gdb note and beyond tda note`
-  - `update k-r-space-LRI`
-  ```
-
-## Frontmatter Requirements
-
-All articles MUST include frontmatter with these fields:
-
-  ```markdown
-  ---
-  title: Article Title
-  lang: zh-CN
-  date: YYYY-MM-DD
-  author: "Fisherd"
-  categories: 物理  # 物理/计算机/生活
-  tags:
-    - tag1
-    - tag2
-  description: Article description
-  ---
-  ```
-Missing frontmatter or categories = article excluded from nav/homepage.
-
-**Categories**:
-- `物理` - Physics, condensed matter, BSE, GW calculations
-- `计算机` - Programming, servers, tools
-- `生活` - Photo gallery, daily life
-
-## Implementation Notes
-- Parser handles both Windows (`\r\n`) and Unix (`\n`) line endings
-- Multi-line arrays supported (tags field)
-- Missing frontmatter or categories = article excluded from nav/homepage
-- `index.md` automatically excluded from article lists
+- Update `UPDATE_LOG.md` for user-visible features, architecture changes, or
+  deployment changes.
+- GitHub Actions deploys pushes to `master`; local edits are not live until the
+  site is committed and pushed. Cloudflare Worker deployment is separate.

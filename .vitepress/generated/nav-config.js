@@ -1,5 +1,5 @@
 // 自动生成的 nav 和 sidebar 配置
-// 请勿手动编辑此文件，运行 node generate-nav-config.js 重新生成
+// 请勿手动编辑此文件，运行 node scripts/generate-nav-config.js 重新生成
 
 export const navConfig = [
   {
