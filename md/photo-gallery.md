@@ -9,8 +9,6 @@ tags:
   - 摄影
   - 生活
 description: 个人摄影集
-editLink: true
-
 hero:
   name: 相册
   tagline: "光影之间，定格瞬间。"
@@ -22,16 +20,20 @@ hero:
 
 该页面目前整理了一些个人摄影集
 > [!Tip]
-> 右键→另存为 可以保存原分辨率
+> 点击图片放大后可查看或保存原分辨率图片
 
 ### 220616_国科大全景图
-![220616_国科大全景图](/images/220616_ucas.jpg)
+<img src="/images/220616_ucas-preview.webp" data-zoom-src="/images/220616_ucas.jpg" alt="220616_国科大全景图" width="3200" height="597" loading="lazy" decoding="async">
+
 ### 221004_香山眺望北四环
-![221004_香山眺望北四环](/images/221004_xiangshan.jpg)
+<img src="/images/221004_xiangshan-preview.webp" data-zoom-src="/images/221004_xiangshan.jpg" alt="221004_香山眺望北四环" width="2400" height="1600" loading="lazy" decoding="async">
+
 ### 230319_青龙峡
-![230319_青龙峡](/images/230319_qinglongxia.jpg)
+<img src="/images/230319_qinglongxia-preview.webp" data-zoom-src="/images/230319_qinglongxia.jpg" alt="230319_青龙峡" width="2400" height="1600" loading="lazy" decoding="async">
+
 ### 250908_月食_间隔30s
-![250908_月食_间隔30s](/images/250908_lunar_eclipse_30s.jpg)
+<img src="/images/250908_lunar_eclipse_30s-preview.webp" data-zoom-src="/images/250908_lunar_eclipse_30s.jpg" alt="250908_月食_间隔30s" width="2400" height="1599" loading="lazy" decoding="async">
+
 ### 250908_月食_间隔3分
 采用以下提示词用GPT创作了明信片简约风格的作品：
 ```
@@ -53,4 +55,5 @@ Use ivory, midnight indigo, pearl gray, oxidized copper and earthy red. Render t
 
 Keep the design poetic, tactile and minimal. No extra text, detailed architecture, random moon phases, vector-clean shapes, logos or watermarks.
 ```
-![250908_月食_间隔3分](/images/250908_lunar_eclipse_3min.png)
+
+<img src="/images/250908_lunar_eclipse_3min-preview.webp" data-zoom-src="/images/250908_lunar_eclipse_3min.png" alt="250908_月食_间隔3分" width="1024" height="1536" loading="lazy" decoding="async">

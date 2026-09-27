@@ -1,82 +1,21 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useData } from 'vitepress'
-
-// 直接导入 JSON 文件
+import { ref } from 'vue'
 import articlesData from '../../public/articles.json'
 
-const { isDark } = useData()
+const categoryConfig = [
+  { title: '物理', id: 'physics', icon: '📚' },
+  { title: '计算机', id: 'computer', icon: '💻' },
+  { title: '生活', id: 'life', icon: '🌟' }
+]
 
-const logoSrc = computed(() => {
-  return isDark.value ? '/icon_white.png' : '/icon_black.png'
-})
+const categories = categoryConfig.map((category) => ({
+  ...category,
+  articles: articlesData
+    .filter((article) => article.category === category.title)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+})).filter((category) => category.articles.length > 0)
 
-// 分类配置
-const categoryConfig = {
-  '物理': {
-    id: 'physics',
-    icon: '📚',
-    color: '#3b82f6'
-  },
-  '计算机': {
-    id: 'computer',
-    icon: '💻',
-    color: '#14b8a6'
-  },
-  '生活': {
-    id: 'life',
-    icon: '🌟',
-    color: '#f97316'
-  }
-}
-
-// 从导入的 JSON 加载文章列表
-const articles = ref(articlesData)
-
-console.log('✅ 已加载文章列表:', articles.value.length, '篇文章')
-
-// 按分类组织文章
-const categories = computed(() => {
-  const categoryMap = {}
-
-  articles.value.forEach(article => {
-    const category = article.category
-    const categoryInfo = categoryConfig[category]
-
-    if (categoryInfo) {
-      if (!categoryMap[category]) {
-        categoryMap[category] = {
-          id: categoryInfo.id,
-          title: category,
-          icon: categoryInfo.icon,
-          color: categoryInfo.color,
-          articles: []
-        }
-      }
-      categoryMap[category].articles.push(article)
-    }
-  })
-
-  // 按日期排序文章（最新在前）
-  Object.values(categoryMap).forEach(category => {
-    category.articles.sort((a, b) => new Date(b.date) - new Date(a.date))
-  })
-
-  // 转换为数组并按配置的顺序排序
-  const order = ['物理', '计算机', '生活']
-  return order
-    .filter(name => categoryMap[name])
-    .map(name => categoryMap[name])
-})
-
-const expandedCategories = ref(new Set())
-
-// 默认展开所有分类
-onMounted(() => {
-  categories.value.forEach(cat => {
-    expandedCategories.value.add(cat.id)
-  })
-})
+const expandedCategories = ref(new Set(categories.map((category) => category.id)))
 
 const toggleCategory = (categoryId) => {
   if (expandedCategories.value.has(categoryId)) {
@@ -89,50 +28,45 @@ const toggleCategory = (categoryId) => {
 const isExpanded = (categoryId) => {
   return expandedCategories.value.has(categoryId)
 }
-
-const totalArticles = computed(() => {
-  return categories.value.reduce((sum, cat) => sum + cat.articles.length, 0)
-})
-
-const isLoading = computed(() => articles.value.length === 0)
 </script>
 
 <template>
   <div class="home-articles-container">
-    <!-- Loading State -->
-    <div v-if="isLoading" class="loading-state">
-      <p>正在加载文章列表...</p>
-    </div>
-
-    <!-- Articles by Category -->
-    <div v-else class="categories-section">
+    <div class="categories-section">
       <div
         v-for="category in categories"
         :key="category.id"
         class="category-block"
         :data-category="category.id"
       >
-        <!-- Category Header -->
-        <div
-          class="category-header"
-          @click="toggleCategory(category.id)"
-        >
-          <div class="category-header-left">
-            <div class="category-icon">
+        <h2 class="category-heading">
+          <button
+            type="button"
+            class="category-header"
+            :aria-expanded="isExpanded(category.id)"
+            :aria-controls="`${category.id}-articles`"
+            @click="toggleCategory(category.id)"
+          >
+            <span class="category-header-left">
+              <span class="category-icon" aria-hidden="true">
               {{ category.icon }}
-            </div>
-            <h2 class="category-title">{{ category.title }}</h2>
-            <span class="article-count">({{ category.articles.length }} 篇)</span>
-          </div>
-          <div class="expand-icon" :class="{ expanded: isExpanded(category.id) }">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
-          </div>
-        </div>
+              </span>
+              <span class="category-title">{{ category.title }}</span>
+              <span class="article-count">({{ category.articles.length }} 篇)</span>
+            </span>
+            <span class="expand-icon" :class="{ expanded: isExpanded(category.id) }" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            </span>
+          </button>
+        </h2>
 
-        <!-- Articles List -->
-        <div v-show="isExpanded(category.id)" class="articles-list">
+        <div
+          v-show="isExpanded(category.id)"
+          :id="`${category.id}-articles`"
+          class="articles-list"
+        >
           <a
             v-for="article in category.articles"
             :key="article.link"
@@ -164,10 +98,6 @@ const isLoading = computed(() => articles.value.length === 0)
       </div>
     </div>
 
-    <!-- Footer -->
-    <div class="home-footer">
-      <p>© 2025-2026 Fisherd · 部署于 GitHub Pages</p>
-    </div>
   </div>
 </template>
 
@@ -177,13 +107,6 @@ const isLoading = computed(() => articles.value.length === 0)
   max-width: 960px;
   margin: 0 auto;
   padding: var(--spacing-lg) var(--spacing-md);
-}
-
-/* Loading State */
-.loading-state {
-  text-align: center;
-  padding: var(--spacing-2xl);
-  color: var(--c-text-muted);
 }
 
 /* Categories Section */
@@ -208,11 +131,23 @@ const isLoading = computed(() => articles.value.length === 0)
 }
 
 /* Category Header */
+.category-heading {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
 .category-header {
   display: flex;
+  width: 100%;
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-md) var(--spacing-lg);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
   user-select: none;
   transition: all var(--transition-base);
@@ -221,6 +156,11 @@ const isLoading = computed(() => articles.value.length === 0)
 
 .category-header:hover {
   background: var(--c-bg-soft);
+}
+
+.category-header:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: -2px;
 }
 
 .category-header-left {
@@ -369,14 +309,6 @@ const isLoading = computed(() => articles.value.length === 0)
 .article-arrow svg {
   width: 18px;
   height: 18px;
-}
-
-/* Footer */
-.home-footer {
-  text-align: center;
-  padding: var(--spacing-xl) 0;
-  color: var(--c-text-muted);
-  font-size: 0.875rem;
 }
 
 /* Responsive */

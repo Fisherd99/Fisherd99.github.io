@@ -131,7 +131,7 @@ cmake -B build -DLIBRPA_USE_LIBRI=ON \
 `create_continue.sh`会把`read_sigc_mat_rf`改为`t`，从已输出的自能矩阵续算；从头运行的`create.sh`则将其改回`f`。
 
 完成GW计算后，可以执行`plot_compare.py`，它会导出`gwband.png`，展示KS band和GW band在KPT_nscf中的k网格下的对比。
-<img src="/abacus-librpa-bse-tutorial/si_gwband.png" alt="Si的能带对比" style="width: 65%;">
+<img src="/abacus-librpa-bse-tutorial/si_gwband-preview.webp" data-zoom-src="/abacus-librpa-bse-tutorial/si_gwband.png" alt="Si的能带对比" width="1800" height="1620" loading="lazy" decoding="async" style="width: 65%;">
 
 ### 3.4 BSE
 #### INPUT_bse
@@ -185,7 +185,7 @@ Excition binding energies (eV):0.0801936
 ```
 理想情况下，全部激发态的振子强度（oscillator strength）总和应满足f-sum rule：
 $$
-\frac{2}{3 N_\text{e} N_\bm{ k }}\sum_M\Omega_{MN}|\langle M|\hat{\vec{r}}|N\rangle|^2 = \frac{2}{3 N_\text{e} N_\bm{ k }}\sum_M\Omega_{S} \left|\sum_{ai\bm{ k }}\frac{\langle i\bm{k}|\vec{v}|a\bm{k}\rangle}{E_a-E_i} X_{ai\bm{k}}^{S} + \frac{\langle a\bm{k}|\vec{v}|i\bm{k}\rangle}{E_i-E_a} Y_{ai\bm{k}}^{S} \right|^2 = 1
+\frac{2}{3 N_\text{e} N_{\bm{k}}}\sum_M\Omega_{MN}|\langle M|\hat{\vec{r}}|N\rangle|^2 = \frac{2}{3 N_\text{e} N_{\bm{k}}}\sum_M\Omega_{S} \left|\sum_{ai\bm{ k }}\frac{\langle i\bm{k}|\vec{v}|a\bm{k}\rangle}{E_a-E_i} X_{ai\bm{k}}^{S} + \frac{\langle a\bm{k}|\vec{v}|i\bm{k}\rangle}{E_i-E_a} Y_{ai\bm{k}}^{S} \right|^2 = 1
 $$
 本例截取有限的价带、导带和激发态后，TDA与Full分别给出
 ```
@@ -199,7 +199,7 @@ $$
 \epsilon_{2}(\omega)=\sum_{S}\frac{4\pi^{2}}{N_{k}V}\left|\sum_{ai\bm{ k }}\frac{\langle i\bm{k}|\vec{v}|a\bm{k}\rangle}{E_a-E_i} X_{ai\bm{k}}^{S} + \frac{\langle a\bm{k}|\vec{v}|i\bm{k}\rangle}{E_i-E_a} Y_{ai\bm{k}}^{S}\right|^{2}\delta(\omega-\Omega_{S})
 $$
 其中$\delta$函数用洛伦兹展宽做了近似，展宽取为0.15eV。
-<img src="/abacus-librpa-bse-tutorial/si_absorption_spectrum.png" alt="Si吸收谱" style="width: 65%;">
+<img src="/abacus-librpa-bse-tutorial/si_absorption_spectrum-preview.webp" data-zoom-src="/abacus-librpa-bse-tutorial/si_absorption_spectrum.png" alt="Si吸收谱" width="1400" height="1100" loading="lazy" decoding="async" style="width: 65%;">
 
 图中显示了Si的吸收谱，包含TDA（Tamm-Dancoff近似）和Full（完整BSE）两种计算结果。
 
@@ -230,7 +230,7 @@ GW band和BSE吸收谱的参考数据文件可参考附件下的：/example-k555
 
 激子波函数是个两体波函数
 $$
-\Psi^S(\bm{ r }_e,\bm{ r }_h) = \sum_{ai\bm{k}}X^S_{ai\bm k}\psi^\bm{k}_a(\bm{r_e})\psi_i^{\bm{k}*}(\bm{r_h})
+\Psi^S(\bm{ r }_e,\bm{ r }_h) = \sum_{ai\bm{k}}X^S_{ai\bm k}\psi^{\bm{k}}_a(\bm{r_e})\psi_i^{\bm{k}*}(\bm{r_h})
 $$
 这是一个关于两个坐标的六维函数。关于它的可视化一般有两种做法：
 - 平均密度：积分掉其中一个坐标。这种做法的优点是计算简单，缺点是失去了两个坐标的关联性，因此无法反映两个坐标的相对位置关系。
@@ -264,7 +264,7 @@ $$
 使用ABACUS目录下的`tools/02_postprocessing/plot-tools/plot_exciton_silce.py`脚本，可以绘制slice格式的切片激子密度图。执行命令时在后面加上相应的`.dat`文件即可。
 
 <figure>
-  <img src="/abacus-librpa-bse-tutorial/si_exciton_slices_2x2.png" alt="Si的切片激子密度图" style="width: 100%;">
+  <img src="/abacus-librpa-bse-tutorial/si_exciton_slices_2x2-preview.webp" data-zoom-src="/abacus-librpa-bse-tutorial/si_exciton_slices_2x2.png" alt="Si的切片激子密度图" width="1800" height="1092" loading="lazy" decoding="async" style="width: 100%;">
   <figcaption>图：Si 的切片激子密度。(a) 平均电子密度；(b) 平均空穴密度；(c) 固定空穴坐标后的条件电子密度；(d) 固定电子坐标后的条件空穴密度。四幅图均为第 0 个激发态、ca平面切片；条件密度图的固定坐标为 (2.5, 2.5, 2.5) Bohr。</figcaption>
 </figure>
 

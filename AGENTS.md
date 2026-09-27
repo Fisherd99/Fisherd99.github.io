@@ -16,9 +16,11 @@ vitepress/
 │   ├── config.mts                # VitePress site configuration
 │   ├── nav-config.js             # Auto-generated navigation (DO NOT EDIT)
 │   ├── theme/                    # Custom layout and styles
-│   │   └── custom.css            # Color styles
-│   │   └── HomeArticlesAuto.vue  # Customized home page
-│   │   └── index.ts              # Theme entry
+│   │   ├── custom.css            # Color styles
+│   │   ├── HomeArticlesAuto.vue  # Customized home page
+│   │   ├── LazyGiscus.vue        # Lazy-loaded comments
+│   │   ├── PageViewTrend.vue     # 60-day page-view chart
+│   │   ├── index.ts              # Theme entry
 │   │   └── MyLayout.vue          # Layout wrapper
 │   ├── cache/                    # VitePress build cache
 │   └── dist/                     # Built site output
@@ -28,6 +30,9 @@ vitepress/
 ├── public/
 │   └── articles.json             # Auto-generated article metadata
 ├── package.json                  # Dependencies and scripts
+├── scripts/
+│   └── content-utils.mjs         # Shared frontmatter/file helpers
+├── cloudflare/                   # Page-view Worker, D1 schema, Wrangler config
 ├── generate-articles-list.js     # Script to generate articles list
 ├── generate-nav-config.js        # Script to generate nav config
 ├── UPDATE_LOG.md                 # Unified update changelog
@@ -45,7 +50,7 @@ vitepress/
 ## Build Dependencies
 The VitePress site uses:
 - VitePress ^2.0.0-alpha.12
-- Markdown extensions for math (markdown-it-mathjax3)
+- Build-time math rendering with `@mdit/plugin-katex` and KaTeX
 - Medium-zoom for image zooming
 - Giscus for comments
 
@@ -97,7 +102,10 @@ The VitePress site uses:
 ### Markdown
 - Keep headings and content in zh-CN, matching existing articles.
 - Use fenced code blocks with language hints (e.g., `bash`, `ts`).
-- LaTeX math is enabled via MathJax3 (`$$...$$` for blocks, `$...$` inline).
+- LaTeX math is rendered at build time by KaTeX (`$$...$$` for blocks, `$...$` inline).
+- Prefer optimized WebP previews for large images, retain the original in
+  `data-zoom-src`, and include `width`, `height`, `loading="lazy"`, and
+  `decoding="async"` on raw `<img>` elements.
 
 ## Naming Conventions
 - Filenames: English, kebab-case (e.g., `server-notes.md`).

@@ -140,7 +140,7 @@ _{R_{2}\leftrightarrow R_{1}+R}& =\sum_{k_{1},k_{2}}\frac{1}{N_{k}}\mathrm{e}^{-
 \end{aligned}
 $$
 另外值得注意的是，实空间的矩阵需要满足$H_{st}(R)=H_{ts}(-R)$（实数情况，对于复数还要多个复共轭），这样才能保证k空间矩阵的厄米性
-$$H_{st}(k)=\sum_{R}H_{st}(R)\mathrm{e}^{ikR}=\sum_{R}H_{ts}(-R)\mathrm{e}^{ikR}\xlongequal{R\leftrightarrow -R}\sum_{R} H_{ts}(R)\mathrm{e}^{-ikR}=H_{ts}^{*}(k)$$
+$$H_{st}(k)=\sum_{R}H_{st}(R)\mathrm{e}^{ikR}=\sum_{R}H_{ts}(-R)\mathrm{e}^{ikR}\overset{R\leftrightarrow -R}{=}\sum_{R} H_{ts}(R)\mathrm{e}^{-ikR}=H_{ts}^{*}(k)$$
 
 ## 2. k空间和R空间的公式
 
@@ -192,7 +192,7 @@ $$\begin{aligned}
 $$\phi_{t}^{k}(r)=\sum_{R_{t}}\phi_{t}(r-R_{t}-\boldsymbol{\tau}_{t})\mathrm{e}^{ikR_{t}}$$
 它被布洛赫辅助基展开的系数是
 $$\begin{aligned}
-&\phi_{s}^{\boldsymbol{k_2}*}(r)\phi_{t}^\boldsymbol{k_1}(r) =\sum_{\boldsymbol R_{s}\boldsymbol R_{t}}\phi_{s}(\boldsymbol r-\boldsymbol R_{s}-\boldsymbol{\tau}_{s})\phi_{t}(\boldsymbol r-\boldsymbol R_{t}-\boldsymbol{\tau}_{t})\mathrm{e}^{i[\boldsymbol k_1 \cdot \boldsymbol R_{t}-\boldsymbol k_2 \cdot \boldsymbol R_{s}]} \\
+&\phi_{s}^{\boldsymbol{k_2}*}(r)\phi_{t}^{\boldsymbol{k_1}}(r) =\sum_{\boldsymbol R_{s}\boldsymbol R_{t}}\phi_{s}(\boldsymbol r-\boldsymbol R_{s}-\boldsymbol{\tau}_{s})\phi_{t}(\boldsymbol r-\boldsymbol R_{t}-\boldsymbol{\tau}_{t})\mathrm{e}^{i[\boldsymbol k_1 \cdot \boldsymbol R_{t}-\boldsymbol k_2 \cdot \boldsymbol R_{s}]} \\
 &=\sum_{\boldsymbol R_{s}\boldsymbol R_{t}}\sum_{\mu\in S}C_{s(\boldsymbol R_{s}),t(\boldsymbol R_{t})}^{\mu(\boldsymbol R_{s})}e^{i[\boldsymbol k_1 \cdot \boldsymbol R_{t}- \boldsymbol k_2 \cdot \boldsymbol R_{s}]} P_{\mu}(\boldsymbol r-\boldsymbol R_{s}-\boldsymbol \tau_{s}) + \sum_{\boldsymbol R_{s} \boldsymbol R_{t}}\sum_{\mu\in T}C_{s(\boldsymbol R_{s}),t(\boldsymbol R_{t})}^{\mu(\boldsymbol R_{t})}e^{i[\boldsymbol k_1 \cdot \boldsymbol R_{t}-\boldsymbol k_2 \cdot \boldsymbol R_{s}]}P_{\mu}(\boldsymbol r-\boldsymbol R_{t}-\boldsymbol \tau_{t}) \\
 &=\sum_{\boldsymbol R_{s}\boldsymbol R_{t}}\sum_{\mu\in S}C_{s(0),t(\boldsymbol R_{t}-\boldsymbol R_{s})}^{\mu(0)}\mathrm{e}^{i[\boldsymbol k_1 \cdot \boldsymbol R_{t}-\boldsymbol k_2 \cdot \boldsymbol R_{s}]}\frac{1}{N_{k}}\sum_{\boldsymbol k^{\prime}}P_{\mu}^{\boldsymbol k^{\prime}}(\boldsymbol r)\mathrm{e}^{-i\boldsymbol k^{\prime}\cdot \boldsymbol R_{s}} + \sum_{\boldsymbol R_{s}\boldsymbol R_{t}}\sum_{\mu\in T}C_{t(0),s(\boldsymbol R_{s}-\boldsymbol R_{t})}^{\mu(0)}\mathrm{e}^{i[\boldsymbol k_1 \cdot \boldsymbol R_{t}-\boldsymbol k_2 \cdot \boldsymbol R_{s}]}\frac{1}{N_{k}}\sum_{\boldsymbol k^{\prime}}P_{\mu}^{\boldsymbol k^{\prime}}(\boldsymbol r)\mathrm{e}^{-i\boldsymbol k^{\prime}\cdot \boldsymbol R_{t}} \\
 &=\sum_{\boldsymbol R_s \boldsymbol R_{t}}\sum_{\mu\in S} C_{s(0),t(\boldsymbol R_{t}-\boldsymbol R_{s})}^{\mu(0)}\mathrm{e}^{i\boldsymbol k_1 \cdot (\boldsymbol R_{t}-\boldsymbol R_{s})} \frac{1}{N_{k}}\sum_{k^{\prime}}P_{\mu}^{\boldsymbol k^{\prime}}(\boldsymbol r)\mathrm{e}^{i(\boldsymbol k_1 - \boldsymbol k_2 -\boldsymbol k^{\prime}) \cdot \boldsymbol R_{s}} + \sum_{\boldsymbol R_s \boldsymbol R_{t}}\sum_{\mu\in T}C_{t(0), s(\boldsymbol R_{s}-\boldsymbol R_{t})}^{\mu(0)}\mathrm{e}^{i \boldsymbol k_2 (\boldsymbol R_{t}-\boldsymbol R_{s})}\frac{1}{N_{k}}\sum_{\boldsymbol k^{\prime}}P_{\mu}^{\boldsymbol k^{\prime}}(\boldsymbol r)\mathrm{e}^{i\boldsymbol (\boldsymbol k_1 - \boldsymbol k_2 - \boldsymbol k^{\prime})\cdot \boldsymbol R_{t}} \\
@@ -266,8 +266,8 @@ $$
 $$
 \begin{aligned}
 \chi^{0}(\mathbf{r},\mathbf{r}^{\prime},i\tau) =& -i \sum_{\sigma} G^0_{\sigma}(\mathbf r, \mathbf r',i\tau)G^0_{\sigma}(\mathbf r',\mathbf r,-i\tau)\\
-=& -i\sum_{\begin{aligned}\sigma st\mathbf{R}_{s}\mathbf{R}_{t}\\uv\mathbf{R}_{u}\mathbf{R}_{v} \end{aligned}}\phi_s(r-R_s-\tau_s)\phi_u(r-R_u-\tau_u) G^0_{\sigma, st} (R_t-R_s,i\tau) G^0_{\sigma,vu}(R_u-R_v,-i\tau)\phi_t(r'-R_t-\tau_t)\phi_v(r'-R_v-\tau_v) \\
-=& -i\sum_{\begin{aligned}\sigma st\mathbf{R}_{s}\mathbf{R}_{t}\\uv\mathbf{R}_{u}\mathbf{R}_{v} \end{aligned}} \sum_{\mu\nu}\Big[C^\mu_{su}(R_u-R_s)P_\mu(r-R_s-\tau_s)+C^\mu_{us}(R_s-R_u)P_\mu(r-R_u-\tau_u)\Big] G^0_{\sigma, st} (R_t-R_s,i\tau)\\
+=& -i\sum_{\begin{aligned}\sigma st\mathbf{R}_{s}\mathbf{R}_{t}\\u v\mathbf{R}_{u}\mathbf{R}_{v} \end{aligned}}\phi_s(r-R_s-\tau_s)\phi_u(r-R_u-\tau_u) G^0_{\sigma, st} (R_t-R_s,i\tau) G^0_{\sigma,vu}(R_u-R_v,-i\tau)\phi_t(r'-R_t-\tau_t)\phi_v(r'-R_v-\tau_v) \\
+=& -i\sum_{\begin{aligned}\sigma st\mathbf{R}_{s}\mathbf{R}_{t}\\u v\mathbf{R}_{u}\mathbf{R}_{v} \end{aligned}} \sum_{\mu\nu}\Big[C^\mu_{su}(R_u-R_s)P_\mu(r-R_s-\tau_s)+C^\mu_{us}(R_s-R_u)P_\mu(r-R_u-\tau_u)\Big] G^0_{\sigma, st} (R_t-R_s,i\tau)\\
 &\quad \quad \quad \quad \quad \quad G^0_{\sigma,vu}(R_u-R_v,-i\tau) \Big[C^\nu_{tv}(R_v-R_t)P_\nu(r'-R_t-\tau_t)+C^\nu_{vt}(R_t-R_v)P_\nu(r'-R_v-\tau_v)\Big]
 \end{aligned}
 $$

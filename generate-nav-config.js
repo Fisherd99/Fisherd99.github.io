@@ -6,6 +6,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { getAllMarkdownFiles, parseFrontmatter } from './scripts/content-utils.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -21,50 +22,11 @@ const specialPages = [
   { text: '主页', link: '/' }
 ]
 
-// 解析 frontmatter
-function parseFrontmatter(content) {
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
-  if (!match) return null
-
-  const data = {}
-  const lines = match[1].split('\n')
-
-  for (const line of lines) {
-    const trimmedLine = line.trim()
-    if (!trimmedLine || !trimmedLine.includes(':')) continue
-
-    const colonIndex = trimmedLine.indexOf(':')
-    const key = trimmedLine.substring(0, colonIndex).trim()
-    let value = trimmedLine.substring(colonIndex + 1).trim()
-    value = value.replace(/^["']|["']$/g, '')
-    data[key] = value
-  }
-
-  return data
-}
-
-// 获取所有 md 文件
-function getAllMdFiles(dir) {
-  const files = []
-  const entries = fs.readdirSync(dir, { withFileTypes: true })
-
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name)
-    if (entry.isDirectory()) {
-      files.push(...getAllMdFiles(fullPath))
-    } else if (entry.name.endsWith('.md') && entry.name !== 'index.md') {
-      files.push(fullPath)
-    }
-  }
-
-  return files
-}
-
 // 生成 nav 和 sidebar 配置
 function generateNavConfig() {
   console.log('📂 扫描 markdown 文件...')
 
-  const mdFiles = getAllMdFiles(mdDir)
+  const mdFiles = getAllMarkdownFiles(mdDir)
   const categoriesMap = new Map()
 
   // 按分类分组

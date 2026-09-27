@@ -1,4 +1,7 @@
-const BUCKET_MS = 30 * 60 * 1000
+const HALF_HOUR_MS = 30 * 60 * 1000
+const RECENT_BUCKETS = 48
+const DAY_MS = 24 * 60 * 60 * 1000
+const HISTORY_DAYS = 60
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,40 +27,35 @@ const normalizePath = (rawPath) => {
   return clean.startsWith('/') ? clean : `/${clean}`
 }
 
-const bucketNow = () => Math.floor(Date.now() / BUCKET_MS) * BUCKET_MS
+const bucketNow = () => Math.floor(Date.now() / HALF_HOUR_MS) * HALF_HOUR_MS
 
 const trackPageview = async (env, pagePath) => {
   const ts = Date.now()
   const bucket = bucketNow()
 
-  const current = await env.DB
-    .prepare('SELECT total FROM pageview_totals WHERE path = ?1')
-    .bind(pagePath)
-    .first()
-
-  const nextTotal = Number(current?.total ?? 0) + 1
-
+  // D1 executes a batch transactionally. Incrementing inside SQL prevents
+  // concurrent requests from overwriting each other's counts.
   await env.DB.batch([
     env.DB
       .prepare(`
         INSERT INTO pageview_totals (path, total, updated_at)
-        VALUES (?1, ?2, ?3)
+        VALUES (?1, 1, ?2)
         ON CONFLICT(path) DO UPDATE SET
-          total = excluded.total,
+          total = pageview_totals.total + 1,
           updated_at = excluded.updated_at
       `)
-      .bind(pagePath, nextTotal, ts),
+      .bind(pagePath, ts),
     env.DB
       .prepare(`
-        INSERT INTO pageview_history (path, bucket_ts, total)
-        VALUES (?1, ?2, ?3)
+        INSERT INTO pageview_buckets (path, bucket_ts, views)
+        VALUES (?1, ?2, 1)
         ON CONFLICT(path, bucket_ts) DO UPDATE SET
-          total = excluded.total
+          views = pageview_buckets.views + 1
       `)
-      .bind(pagePath, bucket, nextTotal)
+      .bind(pagePath, bucket)
   ])
 
-  return { path: pagePath, total: nextTotal }
+  return { path: pagePath }
 }
 
 const getHistory = async (env, pagePath) => {
@@ -68,21 +66,31 @@ const getHistory = async (env, pagePath) => {
 
   const rows = await env.DB
     .prepare(`
-      SELECT ts, value FROM (
-        SELECT bucket_ts AS ts, total AS value
-        FROM pageview_history
-        WHERE path = ?1
-        ORDER BY bucket_ts DESC
-        LIMIT 24
-      ) AS recent
+      SELECT
+        CAST(bucket_ts / ?2 AS INTEGER) * ?2 AS ts,
+        SUM(views) AS value
+      FROM pageview_buckets
+      WHERE path = ?1 AND bucket_ts >= ?3
+      GROUP BY CAST(bucket_ts / ?2 AS INTEGER)
       ORDER BY ts ASC
     `)
-    .bind(pagePath)
+    .bind(pagePath, DAY_MS, Math.floor(Date.now() / DAY_MS) * DAY_MS - (HISTORY_DAYS - 1) * DAY_MS)
     .all()
+
+  const recentStart = bucketNow() - (RECENT_BUCKETS - 1) * HALF_HOUR_MS
+  const recentRow = await env.DB
+    .prepare(`
+      SELECT COALESCE(SUM(views), 0) AS views
+      FROM pageview_buckets
+      WHERE path = ?1 AND bucket_ts >= ?2
+    `)
+    .bind(pagePath, recentStart)
+    .first()
 
   return {
     path: pagePath,
     total: Number(totalRow?.total ?? 0),
+    recent24h: Number(recentRow?.views ?? 0),
     points: (rows.results ?? []).map((row) => ({
       ts: Number(row.ts),
       value: Number(row.value)

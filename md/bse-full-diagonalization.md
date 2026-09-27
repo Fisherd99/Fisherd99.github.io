@@ -91,16 +91,16 @@ $$
 在tda近似下，吸收谱是按下式计算的
 $$
 \begin{aligned}
-\epsilon_{2}(\omega)&\xlongequal{\text{length}}\sum_{S}\frac{4\pi^{2}}{N_{k}V}\left|\sum_{ai\boldsymbol{ k }}\langle i\boldsymbol{k}|\vec{r}|a\boldsymbol{k}\rangle X_{ai\boldsymbol{k}}^{S}\right|^{2}\delta(\omega-\Omega_{S})\\
-&\xlongequal{\text{vel\_div}}\sum_{S}\frac{4\pi^{2}}{N_{k}V}\left|\sum_{ai\boldsymbol{ k }}\frac{\langle i\boldsymbol{k}|\vec{v}|a\boldsymbol{k}\rangle}{E_a-E_i} X_{ai\boldsymbol{k}}^{S}\right|^{2}\delta(\omega-\Omega_{S})\\
-&\xlongequal{\text{vel}}\sum_{S}\frac{4\pi^{2}}{N_{k}V\omega^{2}}\left|\sum_{ai\boldsymbol{ k }}\langle i\boldsymbol{k}|\vec{v}|a\boldsymbol{k}\rangle X_{ai\boldsymbol{k}}^{S}\right|^{2}\delta(\omega-\Omega_{S})
+\epsilon_{2}(\omega)&\overset{\text{length}}{=}\sum_{S}\frac{4\pi^{2}}{N_{k}V}\left|\sum_{ai\boldsymbol{ k }}\langle i\boldsymbol{k}|\vec{r}|a\boldsymbol{k}\rangle X_{ai\boldsymbol{k}}^{S}\right|^{2}\delta(\omega-\Omega_{S})\\
+&\overset{\text{vel\_div}}{=}\sum_{S}\frac{4\pi^{2}}{N_{k}V}\left|\sum_{ai\boldsymbol{ k }}\frac{\langle i\boldsymbol{k}|\vec{v}|a\boldsymbol{k}\rangle}{E_a-E_i} X_{ai\boldsymbol{k}}^{S}\right|^{2}\delta(\omega-\Omega_{S})\\
+&\overset{\text{vel}}{=}\sum_{S}\frac{4\pi^{2}}{N_{k}V\omega^{2}}\left|\sum_{ai\boldsymbol{ k }}\langle i\boldsymbol{k}|\vec{v}|a\boldsymbol{k}\rangle X_{ai\boldsymbol{k}}^{S}\right|^{2}\delta(\omega-\Omega_{S})
 \end{aligned}
 $$
 根据矩阵的谱分解，full应该是按下式推广为
 $$
-\epsilon_2(\omega) = \sum_{S} \frac{4\pi^2}{N_k V \omega^2} \left( \sum_{vck} \braket{v\mathbf k| \vec v |c\mathbf k} X_{vck}^S+\braket{c\mathbf k| \vec v |v\mathbf k} Y_{vck}^S\right)\left( \sum_{vck} \braket{v\mathbf k| \vec v |c\mathbf k} X_{vck}^S-\braket{c\mathbf k| \vec v |v\mathbf k} Y_{vck}^S\right)^* \delta(\omega-\Omega_n)
+\epsilon_2(\omega) = \sum_{S} \frac{4\pi^2}{N_k V \omega^2} \left( \sum_{vck} \left\langle v\mathbf k| \vec v |c\mathbf k\right\rangle X_{vck}^S+\left\langle c\mathbf k| \vec v |v\mathbf k\right\rangle Y_{vck}^S\right)\left( \sum_{vck} \left\langle v\mathbf k| \vec v |c\mathbf k\right\rangle X_{vck}^S-\left\langle c\mathbf k| \vec v |v\mathbf k\right\rangle Y_{vck}^S\right)^* \delta(\omega-\Omega_n)
 $$
 但是经过测试，上式和tda的结果相差很大。目前程序中使用的还是
 $$
-\epsilon_2(\omega) = \sum_{S} \frac{4\pi^2}{N_k V \omega^2} \left| \sum_{vck} \braket{v\mathbf k| \vec v |c\mathbf k} X_{vck}^S+\braket{c\mathbf k| \vec v |v\mathbf k} Y_{vck}^S\right|^2 \delta(\omega-\Omega_n)
+\epsilon_2(\omega) = \sum_{S} \frac{4\pi^2}{N_k V \omega^2} \left| \sum_{vck} \left\langle v\mathbf k| \vec v |c\mathbf k\right\rangle X_{vck}^S+\left\langle c\mathbf k| \vec v |v\mathbf k\right\rangle Y_{vck}^S\right|^2 \delta(\omega-\Omega_n)
 $$

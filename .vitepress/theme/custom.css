@@ -91,7 +91,7 @@
 
 .vp-doc h1 {
     letter-spacing: -0.02em;
-    line-height: 0px;
+    line-height: 1.2;
     font-size: 32px;
     font-weight: 700;
   }
@@ -403,6 +403,74 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* Wrap long code lines by default instead of requiring horizontal scrolling. */
+.vp-doc div[class*='language-'] pre,
+.vp-doc div[class*='language-'] code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.vp-doc div[class*='language-'] pre {
+  overflow-x: hidden;
+}
+
+.vp-doc div[class*='language-'] code {
+  width: auto;
+  min-width: 0;
+}
+
+/* Keep line numbers attached to their source line when that line wraps. */
+.vp-doc .line-numbers-wrapper {
+  display: none;
+}
+
+.vp-doc div[class*='language-'].line-numbers-mode {
+  --code-line-number-digits: 2;
+  --code-line-number-width: calc(var(--code-line-number-digits) * 1ch);
+  padding-left: 0;
+}
+
+.vp-doc div[class*='language-'].line-numbers-mode::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(28px + var(--code-line-number-width));
+  z-index: 2;
+  border-left: 1px solid var(--vp-code-block-divider-color);
+  content: '';
+}
+
+.vp-doc .line-numbers-mode code {
+  counter-reset: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.vp-doc .line-numbers-mode code > .line {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  min-width: 0;
+  padding-left: calc(var(--code-line-number-width) + 26px);
+}
+
+.vp-doc .line-numbers-mode code > .line:empty::before {
+  content: '\200b';
+}
+
+.vp-doc .line-numbers-mode code > .line::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--code-line-number-width);
+  z-index: 2;
+  color: var(--vp-c-text-3);
+  text-align: right;
+  content: attr(data-line-number);
+  user-select: none;
+}
+
 /* ===================================
    Image Enhancements
    =================================== */
@@ -617,4 +685,25 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+.VPDoc .title-last-updated {
+  margin: 8px 0 0px;
+  text-align: right;
+}
+
+.VPDoc .title-last-updated + * {
+  margin-top: 6px;
+}
+
+.VPDocFooter .VPLastUpdated {
+  display: none;
+}
+
+/* The custom aside slot already labels this section as “导航”. */
+.VPDocAsideOutline .outline-title {
+  display: none;
+}
+
+.VPDocAsideOutline .outline-marker {
+  transform: translateY(-32px);
 }

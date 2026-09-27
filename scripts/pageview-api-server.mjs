@@ -9,6 +9,11 @@ const rootDir = path.resolve(__dirname, '..')
 const dataDir = path.join(rootDir, 'public', 'api', 'pageview')
 const dbFile = path.join(dataDir, 'db.json')
 const port = Number(process.env.PAGEVIEW_API_PORT ?? 8787)
+const halfHourMs = 30 * 60 * 1000
+const recentBuckets = 48
+const dayMs = 24 * 60 * 60 * 1000
+const historyDays = 60
+let mutationQueue = Promise.resolve()
 
 const ensureDb = async () => {
   await fs.mkdir(dataDir, { recursive: true })
@@ -29,7 +34,15 @@ const readDb = async () => {
 }
 
 const writeDb = async (db) => {
-  await fs.writeFile(dbFile, JSON.stringify(db, null, 2), 'utf-8')
+  const temporaryFile = `${dbFile}.tmp`
+  await fs.writeFile(temporaryFile, JSON.stringify(db, null, 2), 'utf-8')
+  await fs.rename(temporaryFile, dbFile)
+}
+
+const withMutationLock = (task) => {
+  const result = mutationQueue.then(task, task)
+  mutationQueue = result.then(() => undefined, () => undefined)
+  return result
 }
 
 const sendJson = (res, statusCode, data) => {
@@ -51,17 +64,31 @@ const normalizePath = (rawPath) => {
 }
 
 const nowBucket = () => {
-  const intervalMs = 30 * 60 * 1000
-  return Math.floor(Date.now() / intervalMs) * intervalMs
+  return Math.floor(Date.now() / halfHourMs) * halfHourMs
 }
 
 const toHistoryPoints = (pathData) => {
-  const map = pathData?.history ?? {}
-  return Object.entries(map)
-    .map(([ts, value]) => ({ ts: Number(ts), value: Number(value) }))
-    .filter((item) => Number.isFinite(item.ts) && Number.isFinite(item.value))
+  const map = pathData?.buckets ?? {}
+  const firstDay = Math.floor(Date.now() / dayMs) * dayMs - (historyDays - 1) * dayMs
+  const daily = new Map()
+
+  for (const [rawTs, rawValue] of Object.entries(map)) {
+    const ts = Number(rawTs)
+    const value = Number(rawValue)
+    if (!Number.isFinite(ts) || !Number.isFinite(value) || ts < firstDay) continue
+    const day = Math.floor(ts / dayMs) * dayMs
+    daily.set(day, (daily.get(day) ?? 0) + value)
+  }
+
+  return Array.from(daily, ([ts, value]) => ({ ts, value }))
     .sort((a, b) => a.ts - b.ts)
-    .slice(-24)
+}
+
+const getRecentReads = (pathData) => {
+  const start = nowBucket() - (recentBuckets - 1) * halfHourMs
+  return Object.entries(pathData?.buckets ?? {}).reduce((sum, [ts, views]) => {
+    return Number(ts) >= start ? sum + Number(views) : sum
+  }, 0)
 }
 
 const server = http.createServer(async (req, res) => {
@@ -86,13 +113,17 @@ const server = http.createServer(async (req, res) => {
         const bodyRaw = Buffer.concat(chunks).toString('utf-8')
         const body = bodyRaw ? JSON.parse(bodyRaw) : {}
         const pagePath = normalizePath(body.path ?? url.searchParams.get('path') ?? '/')
-        const db = await readDb()
-        const item = db.paths[pagePath] ?? { total: 0, history: {} }
-        item.total += 1
-        const bucket = nowBucket()
-        item.history[bucket] = item.total
-        db.paths[pagePath] = item
-        await writeDb(db)
+        const item = await withMutationLock(async () => {
+          const db = await readDb()
+          const current = db.paths[pagePath] ?? { total: 0, buckets: {} }
+          current.buckets ??= {}
+          current.total += 1
+          const bucket = nowBucket()
+          current.buckets[bucket] = Number(current.buckets[bucket] ?? 0) + 1
+          db.paths[pagePath] = current
+          await writeDb(db)
+          return current
+        })
         sendJson(res, 200, { ok: true, path: pagePath, total: item.total })
       } catch (error) {
         sendJson(res, 500, { error: String(error) })
@@ -105,10 +136,11 @@ const server = http.createServer(async (req, res) => {
     try {
       const pagePath = normalizePath(url.searchParams.get('path') ?? '/')
       const db = await readDb()
-      const item = db.paths[pagePath] ?? { total: 0, history: {} }
+      const item = db.paths[pagePath] ?? { total: 0, buckets: {} }
       sendJson(res, 200, {
         path: pagePath,
         total: item.total,
+        recent24h: getRecentReads(item),
         points: toHistoryPoints(item)
       })
     } catch (error) {

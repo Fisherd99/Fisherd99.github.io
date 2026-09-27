@@ -1,6 +1,5 @@
 import { defineConfig } from 'vitepress'
-import markdownItAnchor from 'markdown-it-anchor'
-import markdownItMathjax3 from 'markdown-it-mathjax3'
+import { katex } from '@mdit/plugin-katex'
 import { navConfig, sidebarConfig } from './nav-config.js'
 
 const pageviewApiBase = (process.env.PAGEVIEW_API_BASE ?? 'https://fisherd-pageview-api.fisherd.workers.dev').replace(/\/$/, '')
@@ -11,34 +10,38 @@ const pageviewHead = pageviewApiBase
     ]
   : []
 
-// Use markdown-it-mathjax3 plugin and define `\bm` macro via plugin options.
+const cloudflareAnalyticsHead = [
+  ['script', {
+    type: 'module',
+    src: 'https://static.cloudflareinsights.com/beacon.min.js',
+    'data-cf-beacon': JSON.stringify({
+      token: '118cd19b16644741a95d21b7611180c7',
+      spa: true
+    })
+  }]
+]
+
+// Render equations at build time with KaTeX and project-specific compatibility macros.
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   srcDir: "./md",
   base: "/",
   lang: "zh-CN",
-  head: pageviewHead,
+  head: [...pageviewHead, ...cloudflareAnalyticsHead],
   title: "卷心菜农场 —— Fisherd's blog",
   description: "Cabbage Farm",
 
   markdown: {
-    math: true,
     lineNumbers: true,
     image: {lazyLoading: true},
-    // 使用 markdown-it-mathjax3 插件并在 tex.macros 中定义 \bm
+    // KaTeX keeps formula-heavy article chunks compact without client-side rendering.
     config: (md) => {
-      md.use(markdownItMathjax3, {
-        tex: {
-          macros: { bm: ["{\\boldsymbol{#1}}", 1] }
-        }
+      md.use(katex, {
+        throwOnError: false,
+        strict: 'warn'
       })
     },
-    // markdown-it-anchor 的选项
-    // https://github.com/valeriangalliat/markdown-it-anchor#usage
-    // anchor: {
-    //   permalink: markdownItAnchor.permalink.headerLink()
-    // },
     // @mdit-vue/plugin-toc 的选项
     // https://github.com/mdit-vue/mdit-vue/tree/main/packages/plugin-toc#options
     toc: { level: [1, 2] },
@@ -48,8 +51,8 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     outline: [2,3],
     logo: {
-      dark: 'icon_white.png',
-      light: 'icon_black.png'
+      dark: 'icon_white.webp',
+      light: 'icon_black.webp'
     },
     lastUpdated: {
       text: 'Updated at',
@@ -69,9 +72,6 @@ export default defineConfig({
     footer: {
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2025-2026 Fisherd'
-    },
-    editLink: {
-      pattern: 'https://github.com/Fisherd99/Fisherd99.github.io/edit/master/md/:path'
     },
     // VitePress 自带的检索全文功能。
     // See: https://vitepress.dev/zh/reference/default-theme-search
