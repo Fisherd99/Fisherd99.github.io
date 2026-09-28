@@ -7,7 +7,9 @@ const props = defineProps({
     default: () => []
   },
   loading: Boolean,
-  error: Boolean
+  error: Boolean,
+  title: { type: String, default: '最近 60 天阅读趋势' },
+  unit: { type: String, default: '阅读' }
 })
 
 const bucketCount = 60
@@ -85,9 +87,9 @@ const formatDate = (timestamp) => new Date(timestamp).toLocaleDateString('zh-CN'
   <section class="pageview-trend" aria-labelledby="pageview-trend-title" :aria-busy="loading">
     <div class="trend-heading">
       <div>
-        <div id="pageview-trend-title" class="trend-title" role="heading" aria-level="2">最近 60 天阅读趋势</div>
+        <div id="pageview-trend-title" class="trend-title" role="heading" aria-level="2">{{ title }}</div>
         <p v-if="!loading && !error" class="trend-summary">
-          共 {{ totalReads }} 次阅读，{{ activeBuckets }} 天有访问
+          共 {{ totalReads }} 次{{ unit }}，{{ activeBuckets }} 天有访问
         </p>
       </div>
       <span v-if="!loading && !error" class="trend-peak">峰值 {{ peakValue }} 次/天</span>
@@ -103,7 +105,7 @@ const formatDate = (timestamp) => new Date(timestamp).toLocaleDateString('zh-CN'
           class="trend-chart"
           :viewBox="`0 0 ${chartWidth} ${chartHeight}`"
           role="img"
-          :aria-label="`最近60天共${totalReads}次阅读，单日峰值${peakValue}次`"
+          :aria-label="`最近60天共${totalReads}次${unit}，单日峰值${peakValue}次`"
         >
         <line x1="0" y1="94" :x2="chartWidth" y2="94" class="chart-axis" />
         <line x1="0" y1="52" :x2="chartWidth" y2="52" class="chart-grid" />
@@ -113,7 +115,7 @@ const formatDate = (timestamp) => new Date(timestamp).toLocaleDateString('zh-CN'
           class="chart-bar-target"
           tabindex="0"
           role="img"
-          :aria-label="`${formatDate(point.ts)}，${point.value} 次阅读`"
+          :aria-label="`${formatDate(point.ts)}，${point.value} 次${unit}`"
           @mouseenter="hoveredPoint = point"
           @mouseleave="hoveredPoint = null"
           @focus="hoveredPoint = point"

@@ -1,5 +1,12 @@
 # 更新日志
 
+## 2026-09-28 - 首页增加访问统计与访客地图，升级 Wrangler
+
+- 首页在文章分类列表后展示首页累计访问量、最近 24 小时访问量和近 60 天趋势；同时复用 Cloudflare 聚合访客地图与 MapMyVisitors 地图。
+- 修正首页地图溢出与统计显示。
+- 从旧版 `ibruce.info` 2.3 脚本迁移到官方 v3 API（`cdn.busuanzi.cc/api.php`），按新版接口提交当前页面 URL 与来源，并读取 `busuanzi_page_pv` 计数。
+- Busuanzi 数值明确标为“本页参考计数”，公开查询链接独立标为“查看全站统计”。
+
 ## 2026-09-28 - 恢复 MapMyVisitors 参考地图
 
 - 恢复 commit `6c395f2` 中的 MapMyVisitors 嵌入，放在 Cloudflare 访客地图右侧。根据博客浅色/深色主题设置地图配色，并在窄屏下与统计图表自适应排列。
@@ -28,7 +35,7 @@
 - 新增每日 Cron，自动清理过期去重记录和限流数据。
 - D1 数据库 ID：`9929fe86-780b-4b68-bdb4-25f03526c7ef`。
 - 已完成远端 D1 migration；线上 Worker 版本 ID：`d6b04bf3-7819-4afc-aa20-ffc52bd3d42f`。
-- 将 Wrangler 精确固定为 `4.141.0`。
+- 将 Wrangler 精确固定为 `4.142.0`。
 
 ### 其他
 - 收紧文章标题下方 `lastUpdated` 与正文首个分割线之间的间距。

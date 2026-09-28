@@ -3,9 +3,7 @@ import { nextTick, onMounted, ref, watch } from 'vue'
 import DefaultTheme from 'vitepress/theme'
 import HomeArticlesAuto from './HomeArticlesAuto.vue'
 import LazyGiscus from './LazyGiscus.vue'
-import PageViewTrend from './PageViewTrend.vue'
-import CloudflareVisitorMap from './CloudflareVisitorMap.vue'
-import MapMyVisitors from './MapMyVisitors.vue'
+import PageViewDashboard from './PageViewDashboard.vue'
 import { useData, useRoute } from 'vitepress'
 
 const { isDark } = useData()
@@ -133,35 +131,33 @@ watch(
 
     <template #home-hero-after>
       <HomeArticlesAuto />
+      <div class="home-analytics">
+        <PageViewDashboard
+          :page-views="cfPageViews"
+          :recent-views="cfRecentReads"
+          :status="cfStatus"
+          :points="cfHistoryPoints"
+          :locations="cfVisitorLocations"
+          :loading="cfLoading"
+          :error="cfError"
+          :is-dark="isDark"
+          is-home
+        />
+      </div>
     </template>
 
     <template #doc-after>
       <div style="margin-top: 24px">
-        <div class="pageview-stats">
-          <span>
-            本文阅读量：<strong>{{ cfPageViews }}</strong>
-          </span>
-          <span>
-            最近 24 小时阅读量：<strong>{{ cfRecentReads }}</strong>
-          </span>
-          <span id="busuanzi_container_page_pv" class="reference-pageview" style="display: none">
-            Busuanzi参考计数：<strong id="busuanzi_value_page_pv">0</strong>
-          </span>
-        </div>
-        <div class="pageview-status">{{ cfStatus }}</div>
-        <div class="analytics-row">
-          <PageViewTrend
-            :points="cfHistoryPoints"
-            :loading="cfLoading"
-            :error="cfError"
-          />
-          <CloudflareVisitorMap
-            :locations="cfVisitorLocations"
-            :loading="cfLoading"
-            :error="cfError"
-          />
-          <MapMyVisitors :is-dark="isDark" />
-        </div>
+        <PageViewDashboard
+          :page-views="cfPageViews"
+          :recent-views="cfRecentReads"
+          :status="cfStatus"
+          :points="cfHistoryPoints"
+          :locations="cfVisitorLocations"
+          :loading="cfLoading"
+          :error="cfError"
+          :is-dark="isDark"
+        />
         <LazyGiscus :key="route.path" :theme="isDark ? 'dark' : 'light'" />
       </div>
     </template>
@@ -169,53 +165,16 @@ watch(
 </template>
 
 <style scoped>
-.pageview-stats {
-  margin-bottom: 16px;
-  font-size: 0.9rem;
-  color: var(--vp-c-text-2);
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+.home-analytics {
+  box-sizing: border-box;
+  width: min(100%, 960px);
+  margin: 0 auto;
+  padding: 0 24px 24px;
 }
 
-.pageview-status {
-  margin: -6px 0 10px;
-  font-size: 0.78rem;
-  color: var(--vp-c-text-3);
-}
-
-.reference-pageview {
-  color: var(--vp-c-text-3);
-}
-
-.analytics-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(180px, 320px) minmax(180px, 280px);
-  gap: 16px;
-  align-items: stretch;
-}
-
-.analytics-row :deep(.pageview-trend) {
-  min-width: 0;
-}
-
-@media (max-width: 700px) {
-  .analytics-row {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .analytics-row :deep(.visitor-map) {
-    margin-top: -10px;
-  }
-}
-
-@media (min-width: 701px) and (max-width: 900px) {
-  .analytics-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .analytics-row :deep(.pageview-trend) {
-    grid-column: 1 / -1;
+@media (max-width: 768px) {
+  .home-analytics {
+    padding: 0 16px 24px;
   }
 }
 

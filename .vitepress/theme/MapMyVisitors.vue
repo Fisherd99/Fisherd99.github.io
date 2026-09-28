@@ -6,18 +6,36 @@ const props = defineProps({
 })
 
 const container = ref(null)
+const mapStage = ref(null)
+const mapScale = ref(1)
+const mapWidth = ref(0)
+let resizeObserver
+
+const fitMap = () => {
+  if (!container.value || !mapStage.value || !mapWidth.value) return
+
+  // Scale the complete widget: its raster background and point coordinates
+  // must retain the same native dimensions when the card changes width.
+  const bounds = container.value.getBoundingClientRect()
+  const height = parseFloat(getComputedStyle(mapStage.value).height)
+  mapScale.value = Math.min(
+    bounds.width / mapWidth.value,
+    height > 0 ? bounds.height / height : 1
+  )
+}
 
 const loadMap = () => {
-  if (!container.value || typeof document === 'undefined') return
+  if (!mapStage.value || mapWidth.value < 1 || typeof document === 'undefined') return
 
-  container.value.replaceChildren()
+  const stage = mapStage.value
+  stage.replaceChildren()
 
   const colors = props.isDark
     ? { text: 'e5e7eb', ocean: '1e293b', labels: '94a3b8', high: 'c4b5fd', low: '8b5cf6' }
     : { text: '3c3c43', ocean: 'f1f5f9', labels: '64748b', high: '7e22ce', low: 'a78bfa' }
   const params = new URLSearchParams({
     cl: colors.text,
-    w: 'a',
+    w: String(mapWidth.value),
     t: 'tt',
     d: 'vI6kFKqVuy9qV_ohB4mdDaJhBxJn0m-VmrLLdRa1IHA',
     co: colors.ocean,
@@ -36,21 +54,46 @@ const loadMap = () => {
   loadingState.textContent = '正在加载第三方地图…'
   script.onload = () => loadingState.remove()
   script.onerror = () => {
-    if (container.value) {
+    if (mapStage.value === stage) {
       const errorState = document.createElement('span')
       errorState.className = 'map-my-visitors-state'
       errorState.setAttribute('role', 'status')
       errorState.textContent = 'MapMyVisitors 地图暂时无法加载'
-      container.value.replaceChildren(errorState)
+      stage.replaceChildren(errorState)
     }
   }
-  container.value.appendChild(loadingState)
-  container.value.appendChild(script)
+  stage.appendChild(loadingState)
+  stage.appendChild(script)
 }
 
-onMounted(loadMap)
+onMounted(() => {
+  if (!container.value || !mapStage.value) return
+  const updateSize = () => {
+    if (!mapWidth.value) {
+      // Leave space for the widget's page-view label above the map.
+      mapWidth.value = Math.max(0, Math.floor(Math.min(
+        container.value.clientWidth,
+        (container.value.clientHeight - 22) * 2.04
+      )))
+      if (mapWidth.value > 0) loadMap()
+    }
+    fitMap()
+  }
+  if (typeof ResizeObserver === 'undefined') {
+    updateSize()
+    window.addEventListener('resize', updateSize)
+    resizeObserver = { disconnect: () => window.removeEventListener('resize', updateSize) }
+    return
+  }
+  resizeObserver = new ResizeObserver(updateSize)
+  resizeObserver.observe(container.value)
+  resizeObserver.observe(mapStage.value)
+})
 watch(() => props.isDark, loadMap)
-onBeforeUnmount(() => container.value?.replaceChildren())
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  mapStage.value?.replaceChildren()
+})
 </script>
 
 <template>
@@ -62,7 +105,13 @@ onBeforeUnmount(() => container.value?.replaceChildren())
       <span class="map-my-visitors-source">第三方参考地图</span>
     </div>
     <div ref="container" class="map-my-visitors-content" aria-label="MapMyVisitors 访客地图">
-      <span class="map-my-visitors-state">正在加载第三方地图…</span>
+      <div
+        ref="mapStage"
+        class="map-my-visitors-stage"
+        :style="{ width: mapWidth ? `${mapWidth}px` : '100%', transform: `translate(-50%, -50%) scale(${mapScale})` }"
+      >
+        <span class="map-my-visitors-state">正在加载第三方地图…</span>
+      </div>
     </div>
   </section>
 </template>
@@ -102,20 +151,24 @@ onBeforeUnmount(() => container.value?.replaceChildren())
 }
 
 .map-my-visitors-content {
-  display: flex;
+  position: relative;
   min-height: 0;
   width: 100%;
   flex: 1;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
   color: var(--vp-c-text-3);
   font-size: 0.82rem;
 }
 
-.map-my-visitors-content :deep(#mapmyvisitors-widget),
-.map-my-visitors-content :deep(iframe) {
-  max-width: 100%;
+.map-my-visitors-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+}
+
+.map-my-visitors-content :deep(.mapmyvisitors-map) {
+  background-repeat: no-repeat;
 }
 
 .map-my-visitors-state:only-child {

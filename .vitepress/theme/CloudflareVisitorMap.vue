@@ -98,36 +98,37 @@ const locationLabel = (point) => {
       </div>
       <span class="visitor-map-source">边缘定位·隐私聚合</span>
     </div>
-    <div v-if="loading" class="visitor-map-state">正在加载访客分布…</div>
-    <div v-else-if="error" class="visitor-map-state">访客地图暂时不可用</div>
-    <div v-else-if="points.length === 0" class="visitor-map-state">尚无地理位置数据</div>
-    <svg
-      v-else
-      class="visitor-map-canvas"
-      :viewBox="`0 0 ${MAP_IMAGE_WIDTH} ${MAP_HEIGHT}`"
-      role="img"
-      aria-label="由 Cloudflare 边缘定位生成的访客分布地图"
-    >
-      <rect class="map-ocean" x="0" y="0" :width="MAP_IMAGE_WIDTH" :height="MAP_HEIGHT" />
-      <g class="map-land" fill-rule="evenodd" aria-hidden="true">
-        <path v-for="(path, index) in worldMapPaths" :key="index" :d="path" />
-      </g>
-      <g class="map-island-details" fill-rule="evenodd" aria-hidden="true">
-        <path v-for="(path, index) in worldMapDetailPaths" :key="index" :d="path" />
-      </g>
-      <g class="map-points">
-        <circle
-          v-for="point in points"
-          :key="`${point.countryCode}-${point.latitude}-${point.longitude}`"
-          :cx="point.x"
-          :cy="point.y"
-          :r="point.radius"
-          tabindex="0"
-        >
-          <title>{{ locationLabel(point) }}</title>
-        </circle>
-      </g>
-    </svg>
+    <div class="visitor-map-canvas-wrap">
+      <svg
+        class="visitor-map-canvas"
+        :viewBox="`0 0 ${MAP_IMAGE_WIDTH} ${MAP_HEIGHT}`"
+        role="img"
+        aria-label="由 Cloudflare 边缘定位生成的访客分布地图"
+      >
+        <rect class="map-ocean" x="0" y="0" :width="MAP_IMAGE_WIDTH" :height="MAP_HEIGHT" />
+        <g class="map-land" fill-rule="evenodd" aria-hidden="true">
+          <path v-for="(path, index) in worldMapPaths" :key="index" :d="path" />
+        </g>
+        <g class="map-island-details" fill-rule="evenodd" aria-hidden="true">
+          <path v-for="(path, index) in worldMapDetailPaths" :key="index" :d="path" />
+        </g>
+        <g class="map-points">
+          <circle
+            v-for="point in points"
+            :key="`${point.countryCode}-${point.latitude}-${point.longitude}`"
+            :cx="point.x"
+            :cy="point.y"
+            :r="point.radius"
+            tabindex="0"
+          >
+            <title>{{ locationLabel(point) }}</title>
+          </circle>
+        </g>
+      </svg>
+      <div v-if="loading || error || points.length === 0" class="visitor-map-state" role="status">
+        {{ loading ? '正在加载访客分布…' : error ? '访客地图暂时不可用' : '尚无地理位置数据' }}
+      </div>
+    </div>
   </section>
 </template>
 
@@ -165,17 +166,30 @@ const locationLabel = (point) => {
 }
 
 .visitor-map-state {
+  position: absolute;
+  inset: 0;
   display: grid;
-  flex: 1;
   place-items: center;
   color: var(--vp-c-text-3);
   font-size: 0.82rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.visitor-map-canvas-wrap {
+  position: relative;
+  display: grid;
+  flex: 1;
+  min-height: 0;
 }
 
 .visitor-map-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
   width: 100%;
+  height: 100%;
   min-height: 0;
-  flex: 1;
 }
 
 .map-ocean {

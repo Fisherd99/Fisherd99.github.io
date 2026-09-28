@@ -118,6 +118,8 @@ specify dimensions and lazy loading on raw `<img>` elements.
 - Cloudflare Web Analytics is a separate private dashboard source. Do not
   backfill or merge its historical country data into the D1 visitor map.
 - Busuanzi is retained only as a clearly labeled third-party reference count.
+  It uses the official v3 API (`cdn.busuanzi.cc/api.php`) and the
+  `busuanzi_page_pv` element; its counts are separate from Cloudflare's.
 - Preserve existing D1 totals during schema changes. Apply `schema.sql` before
   deploying Worker code that depends on new tables or columns.
 - Production errors must not expose internal details. Logs and traces remain

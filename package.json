@@ -27,7 +27,7 @@
     "markdown-it": "^14.1.0",
     "medium-zoom": "^1.1.0",
     "vitepress": "^2.0.0-alpha.12",
-    "wrangler": "4.141.0"
+    "wrangler": "4.142.0"
   },
   "dependencies": {
     "@giscus/vue": "^3.1.1"

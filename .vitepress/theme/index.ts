@@ -5,13 +5,7 @@ import 'katex/dist/katex.min.css'
 import { onMounted, watch, nextTick } from 'vue'
 import { useData, useRoute } from 'vitepress'
 
-declare global {
-  interface Window {
-    busuanzi?: {
-      fetch?: () => void
-    }
-  }
-}
+const BUSUANZI_API = 'https://cdn.busuanzi.cc/api.php'
 
 export default {
   extends: DefaultTheme,
@@ -21,7 +15,8 @@ export default {
   setup() {
     const route = useRoute()
     const { page } = useData()
-    let busuanziScriptLoaded = false
+    let lastBusuanziPageUrl = ''
+    let busuanziRequestId = 0
     let zoomInstance: {
       attach: (selector: string) => void
       detach: () => void
@@ -71,28 +66,40 @@ export default {
       })
     }
 
-    const ensureBusuanziScript = () => {
-      if (typeof window === 'undefined' || busuanziScriptLoaded) {
+    const refreshBusuanzi = async () => {
+      if (typeof window === 'undefined' || !document.getElementById('busuanzi_page_pv')) {
         return
       }
-      const script = document.createElement('script')
-      script.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'
-      script.async = true
-      document.head.appendChild(script)
-      busuanziScriptLoaded = true
-    }
 
-    const refreshBusuanzi = () => {
-      if (typeof window === 'undefined') {
-        return
+      const requestId = ++busuanziRequestId
+      const pageUrl = window.location.href
+      const referrer = lastBusuanziPageUrl || document.referrer
+      lastBusuanziPageUrl = pageUrl
+
+      try {
+        const response = await fetch(BUSUANZI_API, {
+          method: 'POST',
+          body: JSON.stringify({ url: pageUrl, referrer }),
+          keepalive: true
+        })
+        if (!response.ok) throw new Error(`Busuanzi HTTP ${response.status}`)
+
+        const values = await response.json()
+        if (requestId !== busuanziRequestId) return
+        for (const [id, value] of Object.entries(values)) {
+          const counter = document.getElementById(id)
+          if (counter) counter.textContent = String(value)
+        }
+      } catch {
+        if (requestId === busuanziRequestId) {
+          const counter = document.getElementById('busuanzi_page_pv')
+          if (counter) counter.textContent = '暂不可用'
+        }
       }
-      window.setTimeout(() => {
-        window.busuanzi?.fetch?.()
-      }, 80)
     }
 
     onMounted(() => {
-      window.setTimeout(ensureBusuanziScript, 1200)
+      void refreshBusuanzi()
       void initZoom()
       syncWrappedLineNumbers()
       renderLastUpdatedBelowTitle()
