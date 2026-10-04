@@ -2,6 +2,8 @@
 import PageViewTrend from './PageViewTrend.vue'
 import CloudflareVisitorMap from './CloudflareVisitorMap.vue'
 import MapMyVisitors from './MapMyVisitors.vue'
+import { BUSUANZI_PAGE_PV_ID, BUSUANZI_STATS_URL } from '../site-meta.js'
+import { TREND_DAYS } from '../site-config.js'
 
 defineProps({
   pageViews: { type: String, default: '加载中…' },
@@ -26,10 +28,10 @@ defineProps({
         最近 24 小时{{ isHome ? '首页访问量' : '阅读量' }}：<strong>{{ recentViews }}</strong>
       </span>
       <span class="reference-pageview">
-        Busuanzi 本页参考计数：<strong id="busuanzi_page_pv">未获取</strong>
+        Busuanzi 本页参考计数：<strong :id="BUSUANZI_PAGE_PV_ID">未获取</strong>
         （<a
           class="reference-pageview-link"
-          href="https://www.busuanzi.cc/count.php?search=fisherd99.github.io"
+          :href="BUSUANZI_STATS_URL"
           target="_blank"
           rel="noopener noreferrer"
           title="打开 Busuanzi 官方全站统计页（本页参考计数为单页 PV）"
@@ -42,7 +44,7 @@ defineProps({
         :points="points"
         :loading="loading"
         :error="error"
-        :title="isHome ? '最近 60 天首页访问趋势' : '最近 60 天阅读趋势'"
+        :title="isHome ? `最近 ${TREND_DAYS} 天首页访问趋势` : `最近 ${TREND_DAYS} 天阅读趋势`"
         :unit="isHome ? '访问' : '阅读'"
       />
       <CloudflareVisitorMap

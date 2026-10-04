@@ -1,7 +1,13 @@
-const HALF_HOUR_MS = 30 * 60 * 1000
-const RECENT_BUCKETS = 48
-const DAY_MS = 24 * 60 * 60 * 1000
-const HISTORY_DAYS = 60
+import {
+  DAY_MS,
+  TREND_DAYS,
+  HALF_HOUR_MS,
+  RECENT_BUCKETS,
+  normalizeArticlePath,
+  PAGEVIEW_TRACK_PATH,
+  PAGEVIEW_HISTORY_PATH
+} from '../.vitepress/site-config.js'
+
 const DEDUPE_RETENTION_MS = 2 * DAY_MS
 const RATE_WINDOW_MS = 60 * 1000
 const MAX_TRACKS_PER_WINDOW = 30
@@ -53,15 +59,12 @@ const json = (data, status = 200, allowedOrigin = null) => {
 const normalizePath = (rawPath) => {
   if (!rawPath || typeof rawPath !== 'string') return null
 
-  let clean = rawPath.trim().split('#')[0].split('?')[0] || '/'
-  if (!clean.startsWith('/')) clean = `/${clean}`
-  if (clean.length > 1) clean = clean.replace(/\/+$/, '')
-
+  const clean = normalizeArticlePath(rawPath)
   if (clean.length > MAX_PATH_LENGTH || !ARTICLE_PATH_PATTERN.test(clean)) {
     return null
   }
 
-  return clean.endsWith('.html') ? clean.slice(0, -5) || '/' : clean
+  return clean
 }
 
 const bucketNow = () => Math.floor(Date.now() / HALF_HOUR_MS) * HALF_HOUR_MS
@@ -210,7 +213,7 @@ const trackPageview = async (request, env, pagePath) => {
 }
 
 const getHistory = async (env, pagePath) => {
-  const firstDay = Math.floor(Date.now() / DAY_MS) * DAY_MS - (HISTORY_DAYS - 1) * DAY_MS
+  const firstDay = Math.floor(Date.now() / DAY_MS) * DAY_MS - (TREND_DAYS - 1) * DAY_MS
   const recentStart = bucketNow() - (RECENT_BUCKETS - 1) * HALF_HOUR_MS
   const legacyPath = pagePath === '/' ? pagePath : `${pagePath}.html`
   const [totalResult, historyResult, recentResult, locationsResult] = await env.DB.batch([
@@ -297,7 +300,7 @@ const handleFetch = async (request, env) => {
     return json({ ok: true, service: 'pageview-api' }, 200, allowedOrigin)
   }
 
-  if (apiPath === '/api/pageview/track' && request.method === 'POST') {
+  if (apiPath === PAGEVIEW_TRACK_PATH && request.method === 'POST') {
     const validationError = validateTrackRequest(request, allowedOrigin)
     if (validationError) {
       return json({ error: validationError.error }, validationError.status, allowedOrigin)
@@ -329,7 +332,7 @@ const handleFetch = async (request, env) => {
     return json({ ok: true, counted, ...history }, 200, allowedOrigin)
   }
 
-  if (apiPath === '/api/pageview/history' && request.method === 'GET') {
+  if (apiPath === PAGEVIEW_HISTORY_PATH && request.method === 'GET') {
     const pagePath = normalizePath(url.searchParams.get('path'))
     if (!pagePath) {
       return json({ error: 'invalid_path' }, 400, allowedOrigin)

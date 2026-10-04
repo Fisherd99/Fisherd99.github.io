@@ -1,14 +1,9 @@
 <script setup>
 import { ref } from 'vue'
 import articlesData from '../generated/articles.json'
+import { CATEGORIES } from '../site-meta.js'
 
-const categoryConfig = [
-  { title: '物理', id: 'physics', icon: '📚' },
-  { title: '计算机', id: 'computer', icon: '💻' },
-  { title: '生活', id: 'life', icon: '🌟' }
-]
-
-const categories = categoryConfig.map((category) => ({
+const categories = CATEGORIES.map((category) => ({
   ...category,
   articles: articlesData
     .filter((article) => article.category === category.title)
@@ -38,6 +33,7 @@ const isExpanded = (categoryId) => {
         :key="category.id"
         class="category-block"
         :data-category="category.id"
+        :style="{ '--category-color': category.color }"
       >
         <h2 class="category-heading">
           <button
@@ -213,19 +209,6 @@ const isExpanded = (categoryId) => {
 .expand-icon svg {
   width: 20px;
   height: 20px;
-}
-
-/* Category-specific colors */
-.category-block[data-category="physics"] {
-  --category-color: #3b82f6;
-}
-
-.category-block[data-category="computer"] {
-  --category-color: #14b8a6;
-}
-
-.category-block[data-category="life"] {
-  --category-color: #f97316;
 }
 
 /* Articles List */

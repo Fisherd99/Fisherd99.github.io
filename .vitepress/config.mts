@@ -4,6 +4,7 @@ import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { navConfig, sidebarConfig } from './generated/nav-config.js'
 import { SITE_TITLE, SITE_DESCRIPTION, rawMarkdownUrl } from './site-meta.js'
+import { PAGEVIEW_DEFAULT_API_BASE, PAGEVIEW_TRACK_PATH, PAGEVIEW_TRACK_META } from './site-config.js'
 
 // llms.txt 由 scripts/generate-llms-txt.js 生成到 .vitepress/generated/，此处再把它
 // 发布到站点根：构建时作为资源输出，开发时经中间件直接提供。
@@ -30,11 +31,10 @@ const llmsTxtPlugin = {
   }
 }
 
-const pageviewApiBase = (process.env.PAGEVIEW_API_BASE ?? 'https://fisherd-pageview-api.fisherd.workers.dev').replace(/\/$/, '')
+const pageviewApiBase = (process.env.PAGEVIEW_API_BASE ?? PAGEVIEW_DEFAULT_API_BASE).replace(/\/$/, '')
 const pageviewHead = pageviewApiBase
   ? [
-      ['meta', { name: 'pageview-track-api', content: `${pageviewApiBase}/api/pageview/track` }],
-      ['meta', { name: 'pageview-history-api', content: `${pageviewApiBase}/api/pageview/history` }]
+      ['meta', { name: PAGEVIEW_TRACK_META, content: `${pageviewApiBase}${PAGEVIEW_TRACK_PATH}` }]
     ]
   : []
 

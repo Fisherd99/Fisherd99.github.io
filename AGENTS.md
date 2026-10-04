@@ -15,12 +15,14 @@ vitepress/
 │   └── workflows/                # GitHub Pages deployment
 ├── .vitepress/
 │   ├── config.mts                # Site config (publicDir=../public; source links; llms.txt emit)
-│   ├── site-meta.js              # Shared pure constants/helpers for config/theme/scripts
+│   ├── site-meta.js              # Site-only shared constants (title, categories, raw-MD URLs)
+│   ├── site-config.js            # Cross-boundary constants shared with the Worker (analytics)
 │   ├── generated/                # Auto-generated build inputs (DO NOT EDIT)
 │   │   ├── articles.json         # Homepage article metadata
 │   │   ├── llms.txt              # LLM index of raw Markdown URLs (published to /llms.txt)
 │   │   └── nav-config.js         # Navigation and sidebar config
 │   ├── theme/                    # Custom layout and styles
+│   │   ├── composables/          # Browser integrations (zoom, code lines, busuanzi, stats, title meta)
 │   │   ├── custom.css            # Global theme styles
 │   │   ├── HomeArticlesAuto.vue  # Homepage article list
 │   │   ├── LazyGiscus.vue        # Lazy-loaded comments
@@ -28,12 +30,11 @@ vitepress/
 │   │   ├── CloudflareVisitorMap.vue # Cloudflare geolocation visitor map
 │   │   ├── world-map-geo.js      # Simplified Natural Earth lon/lat geometry
 │   │   ├── world-map-data.NOTICE.md # Map data source and license
-│   │   ├── index.ts              # Theme entry and browser integrations
+│   │   ├── index.ts              # Theme entry (thin composition root)
 │   │   └── MyLayout.vue          # Layout and analytics UI
 │   ├── cache/                    # VitePress build cache
 │   └── dist/                     # Built site output
-├── md/                           # Content source directory
-│   └── *.md                      # Markdown articles + homepage
+├── md/                           # Markdown articles + homepage
 ├── public/                       # Static assets published at the site root
 ├── package.json                  # Dependencies and scripts
 ├── scripts/
@@ -60,15 +61,22 @@ Static assets live in the project-root `public/` (published at the site root), n
 `md/public/`. VitePress defaults `publicDir` to `<srcDir>/public`, so `config.mts`
 overrides it via `vite.publicDir`; reference assets with absolute URLs (`/images/...`).
 
+Two dependency-free modules hold cross-cutting constants; import from them instead
+of re-declaring values:
+
+- `.vitepress/site-meta.js` (site-only, browser-safe — no `fs`/`path`, since the
+  theme bundles it): `SITE_TITLE`, `SITE_DESCRIPTION`, the `CATEGORIES` model
+  (title/id/icon/color) with its derived `CATEGORY_ORDER`, the Busuanzi constants,
+  and the raw-Markdown helpers `SOURCE_REPO_BASE` / `rawMarkdownUrl()`.
+- `.vitepress/site-config.js` (shared with the Worker — see Analytics invariants):
+  the analytics window, the pageview API contract, and `normalizeArticlePath()`.
+
 ### Markdown source access for LLMs
 
-- `.vitepress/site-meta.js` is the shared, browser-safe module (no `fs`/`path`
-  imports, since the theme bundles it). It holds `SITE_TITLE`, `SITE_DESCRIPTION`,
-  `CATEGORY_ORDER`, the raw GitHub base `SOURCE_REPO_BASE`, and `rawMarkdownUrl()`;
-  import from config, theme, and scripts so these stay in sync.
-- `config.mts` injects a per-page `<link rel="alternate" type="text/markdown">` in
-  `transformPageData`, and the theme renders a "跳转源文件" link beside the
-  last-updated line, both pointing at the raw `.md` file (not the GitHub HTML view).
+- `rawMarkdownUrl()` builds the raw `.md` URL; `config.mts` injects a per-page
+  `<link rel="alternate" type="text/markdown">` in `transformPageData`, and the theme
+  renders a "跳转源文件" link beside the last-updated line — both point at the raw
+  file, not the GitHub HTML view.
 - `scripts/generate-llms-txt.js` derives `.vitepress/generated/llms.txt`
   (llmstxt.org format) from `articles.json`; the `vitepress:llms-txt` Vite plugin in
   `config.mts` publishes it to `/llms.txt` (build asset + dev middleware).
@@ -128,6 +136,10 @@ specify dimensions and lazy loading on raw `<img>` elements.
 - Cloudflare Worker + D1 is the authoritative page-view source. Counters are
   atomic, keyed by normalized article path, and protected by deduplication and
   rate limiting.
+- The analytics window (`TREND_DAYS`, `RECENT_BUCKETS`, half-hour buckets), the
+  pageview API contract (`PAGEVIEW_*_PATH`, the `pageview-track-api` meta name),
+  and `normalizeArticlePath()` live in `.vitepress/site-config.js`, imported by both
+  the site and `cloudflare/pageview-worker.js`; change them in one place only.
 - Article URLs and new page-view writes use extensionless paths (for example,
   `/gdb`). `.html` requests normalize to that same key for compatibility, and
   history reads include previously stored `.html` rows.

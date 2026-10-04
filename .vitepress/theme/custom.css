@@ -9,16 +9,9 @@
   --vp-c-brand-2: #6b21a8;  /* purple-800 */
   --vp-c-brand-3: #581c87;  /* purple-900 */
 
-  /* Accent Colors */
-  --c-accent-magenta: #d946ef;  /* fuchsia-500 */
-  --c-accent-violet: #8b5cf6;   /* violet-500 */
-  --c-accent-pink: #ec4899;     /* pink-500 */
-  --c-accent-indigo: #6366f1;   /* indigo-500 */
-
   /* Background Colors */
   --c-bg-soft: #f8fafc;
   --c-bg-card: #ffffff;
-  --c-bg-card-hover: #f1f5f9;
 
   /* Text Colors */
   --c-text-primary: #0f172a;
@@ -27,32 +20,25 @@
 
   /* Border Colors */
   --c-border-light: #e2e8f0;
-  --c-border-medium: #cbd5e1;
 
   /* Spacing Scale */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
 
   /* Border Radius */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Dark Mode Overrides */
@@ -62,27 +48,18 @@
   --vp-c-brand-2: #8b5cf6;  /* violet-500 - good contrast */
   --vp-c-brand-3: #7c3aed;  /* violet-600 */
 
-  /* Accent Colors - Lighter for dark backgrounds */
-  --c-accent-magenta: #e879f9;  /* fuchsia-400 */
-  --c-accent-violet: #a78bfa;   /* violet-400 */
-  --c-accent-pink: #f472b6;     /* pink-400 */
-  --c-accent-indigo: #818cf8;   /* indigo-400 */
-
   --c-bg-soft: #1e293b;
   --c-bg-card: #0f172a;
-  --c-bg-card-hover: #1e293b;
 
   --c-text-primary: #f1f5f9;
   --c-text-secondary: #cbd5e1;
   --c-text-muted: #64748b;
 
   --c-border-light: #334155;
-  --c-border-medium: #475569;
 
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.6);
 }
 
 /* ===================================
@@ -135,168 +112,9 @@
     max-width: 1168px !important;
 }
 
-/* doc 页 Hero */
-.doc-hero {
-    margin: 32px 0 24px;
-    text-align: left;
-    padding: 24px 16px;
-    border-radius: 12px;
-    background: linear-gradient(180deg, var(--vp-c-bg-soft), transparent 80%);
-}
-
-.doc-hero .name {
-    font-size: 50px;
-    line-height: 1.15;
-    font-weight: 800;
-    margin: 0 0 8px;
-    background: linear-gradient(90deg, var(--vp-c-brand-1), var(--c-accent-violet));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-
-.doc-hero .tagline {
-    font-size: 20px;
-    color: var(--vp-c-text-2);
-    margin: 0;
-}
-
-@media (max-width: 640px) {
-    .doc-hero .name { font-size: 32px; }
-    .doc-hero .tagline { font-size: 16px; }
-}
-
 /* ===================================
-   Category Navigation Cards
+   Home article tags
    =================================== */
-
-.category-nav-container {
-  margin: var(--spacing-2xl) 0;
-  padding: var(--spacing-lg);
-}
-
-.category-nav-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--c-text-primary);
-  margin-bottom: var(--spacing-lg);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.category-nav-title::before {
-  content: '';
-  display: block;
-  width: 4px;
-  height: 1.5rem;
-  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--c-accent-violet));
-  border-radius: var(--radius-sm);
-}
-
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-2xl);
-}
-
-.category-card {
-  background: var(--c-bg-card);
-  border: 1px solid var(--c-border-light);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-xl);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  position: relative;
-  overflow: hidden;
-  text-decoration: none;
-  display: block;
-}
-
-.category-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--card-color, var(--vp-c-brand-1)), var(--card-accent, var(--c-accent-purple)));
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform var(--transition-base);
-}
-
-.category-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--card-color, var(--vp-c-brand-1));
-  text-decoration: none;
-}
-
-.category-card:hover::before {
-  transform: scaleX(1);
-}
-
-.category-card-header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-}
-
-.category-card-icon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--card-bg, rgba(126, 34, 206, 0.12));
-  border-radius: var(--radius-md);
-  color: var(--card-color, var(--vp-c-brand-1));
-  transition: all var(--transition-base);
-}
-
-.dark .category-card-icon {
-  background: var(--card-bg, rgba(167, 139, 250, 0.15));
-}
-
-.category-card:hover .category-card-icon {
-  transform: scale(1.1);
-  background: var(--card-color, var(--vp-c-brand-1));
-  color: white;
-}
-
-.category-card-icon svg {
-  width: 24px;
-  height: 24px;
-}
-
-.category-card-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--c-text-primary);
-  margin: 0;
-}
-
-.category-card-count {
-  font-size: 0.875rem;
-  color: var(--c-text-muted);
-  margin-top: var(--spacing-xs);
-}
-
-.category-card-description {
-  font-size: 0.9375rem;
-  color: var(--c-text-secondary);
-  line-height: 1.6;
-  margin-bottom: var(--spacing-md);
-}
-
-.category-card-articles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
-}
 
 .article-tag {
   display: inline-flex;
@@ -312,57 +130,10 @@
 }
 
 .article-tag:hover {
-  background: var(--card-color, var(--vp-c-brand-1));
+  background: var(--vp-c-brand-1);
   color: white;
   transform: translateY(-1px);
   text-decoration: none;
-}
-
-/* Category-specific colors - Light Mode */
-.category-card[data-category="physics"] {
-  --card-color: #7e22ce;
-  --card-accent: #a855f7;
-  --card-bg: rgba(126, 34, 206, 0.12);
-}
-
-.category-card[data-category="computer"] {
-  --card-color: #6d28d9;
-  --card-accent: #7c3aed;
-  --card-bg: rgba(109, 40, 217, 0.12);
-}
-
-.category-card[data-category="life"] {
-  --card-color: #be185d;
-  --card-accent: #db2777;
-  --card-bg: rgba(190, 24, 93, 0.12);
-}
-
-/* Dark mode category overrides */
-.dark .category-card[data-category="physics"] {
-  --card-color: #a78bfa;
-  --card-accent: #c084fc;
-  --card-bg: rgba(167, 139, 250, 0.15);
-}
-
-/* Dark mode link enhancements */
-.dark .vp-doc a {
-  text-decoration-opacity: 0.7;
-}
-
-.dark .vp-doc a:hover {
-  text-decoration-opacity: 1;
-}
-
-.dark .category-card[data-category="computer"] {
-  --card-color: #818cf8;
-  --card-accent: #a78bfa;
-  --card-bg: rgba(129, 140, 248, 0.15);
-}
-
-.dark .category-card[data-category="life"] {
-  --card-color: #f472b6;
-  --card-accent: #e879f9;
-  --card-bg: rgba(244, 114, 182, 0.15);
 }
 
 /* ===================================
@@ -380,7 +151,6 @@
   text-decoration-color: var(--vp-c-brand-1);
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
-  text-decoration-opacity: 0.6;
   font-weight: 500;
   transition: all var(--transition-fast);
   position: relative;
@@ -388,7 +158,6 @@
 
 .vp-doc a:hover {
   color: var(--vp-c-brand-2);
-  text-decoration-opacity: 1;
   text-decoration-thickness: 2.5px;
 }
 
@@ -656,31 +425,8 @@
 
 
 /* ===================================
-   Responsive Design
-   =================================== */
-
-@media (max-width: 768px) {
-  .category-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .category-nav-container {
-    padding: var(--spacing-md);
-  }
-
-  .category-card {
-    padding: var(--spacing-lg);
-  }
-}
-
-/* ===================================
    Accessibility
    =================================== */
-
-.category-card:focus-visible {
-  outline: 2px solid var(--vp-c-brand-1);
-  outline-offset: 2px;
-}
 
 .article-tag:focus-visible {
   outline: 2px solid var(--vp-c-brand-1);

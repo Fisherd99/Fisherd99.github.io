@@ -1,11 +1,22 @@
 # 更新日志
 
+## 2026-10-05 - 架构整理：共享常量收敛、分类模型统一、清理死代码
+
+### 共享模块
+- 新增 `.vitepress/site-config.js`：站点与边缘 Worker 共用的依赖无关常量——统计口径（`TREND_DAYS`、`RECENT_BUCKETS`、半小时桶）、Pageview API 契约（端点路径、`pageview-track-api` meta 名）、`normalizeArticlePath()`。站点（Vite）与 `cloudflare/pageview-worker.js`（wrangler）均从此处引用，消除重复实现。
+- 新增 `.vitepress/site-meta.js`（浏览器安全，不引入 Node 内建模块），集中维护：站点标题/描述、`CATEGORIES` 分类模型（标题/id/图标/主题色）及其派生的 `CATEGORY_ORDER`、Busuanzi 常量、原始 Markdown 地址助手。
+- 首页分类配置改由 `site-meta.js` 的 `CATEGORIES` 派生，导航与文章列表生成器共用同一份数据源，分类颜色改以内联 `--category-color` 注入。
+- 将 `theme/index.ts` 与 `MyLayout.vue` 中的命令式 DOM/请求逻辑拆分为 `theme/composables/`（medium-zoom、代码行号、Busuanzi、Cloudflare 统计、标题元信息行），`index.ts` 与 `MyLayout.vue` 退化为薄装配/布局层。
+
+### 清理
+- 移除 `custom.css` 中约 200 行死样式（`.doc-hero`、`.category-nav-*`、`.category-grid`、`.category-card*` 等，组件层已无对应类名），并清理未使用的设计 token（`--c-accent-*`、`--spacing-xl/2xl`、`--radius-lg/xl`、`--shadow-xl`、`--transition-slow` 等）与无效属性 `text-decoration-opacity`。
+- 移除无人读取的 `pageview-history-api` meta（单次往返设计下历史数据随 track 响应一并返回）。
+
 ## 2026-10-04 - 文章页增加 Markdown 源文件入口，便于 LLM 直接读取
 
 - 文章标题下方的更新时间行左侧新增带 GitHub 图标的“跳转源文件”按钮，指向 `raw.githubusercontent.com` 上的原始 Markdown（`.../md/<path>.md`），而非 GitHub 的 HTML 渲染页，LLM/爬虫可拿到纯文本源文件。
 - `config.mts` 通过 `transformPageData` 为每页 `<head>` 注入 `<link rel="alternate" type="text/markdown" href="...">`；会解析 `<head>` 的 agent 无需点击即可发现源文件。
 - 新增 `scripts/generate-llms-txt.js`，依据 `articles.json` 按分类生成 `.vitepress/generated/llms.txt`（遵循 llmstxt.org 规范）；`config.mts` 中的 `vitepress:llms-txt` Vite 插件把它发布到站点根 `/llms.txt`（构建输出为资源，开发时经中间件提供）。
-- 新增共享模块 `.vitepress/site-meta.js`（浏览器安全，不引入 Node 内建模块），集中维护 `SITE_TITLE`、`SITE_DESCRIPTION`、`CATEGORY_ORDER`、`SOURCE_REPO_BASE` 与 `rawMarkdownUrl()`，供 `config.mts`、主题 `index.ts` 与各生成脚本复用，消除重复硬编码。
 - `package.json` 的 `docs:dev` / `docs:build` 链入 `generate-llms-txt.js`，并新增 `npm run generate-llms`。
 - 静态资源根目录从 `md/public/` 迁至项目根 `public/`：VitePress 默认把 `publicDir` 设为 `<srcDir>/public`，现于 `config.mts` 用 `vite.publicDir` 覆盖，让静态资源与内容源目录分离；资源引用均为绝对路径，URL 不变。
 - 退役本地阅读量兜底服务：删除 `scripts/pageview-api-server.mjs`、`npm run pageview:api` 及其数据目录 `public/api/`（其 `db.json` 原本会随新的 `public/` 被发布到线上）。统计完全以 Cloudflare Worker + D1 为准，Busuanzi 为独立第三方参考；同时修正 `DEPLOY_PAGEVIEW_API.md` 中关于 `PAGEVIEW_API_BASE` 未设置行为的描述。
@@ -149,4 +160,4 @@ npm run docs:dev      # 自动生成后启动
 ---
 
 **维护者**: Fisherd
-**最后更新**: 2026-10-04
+**最后更新**: 2026-10-05

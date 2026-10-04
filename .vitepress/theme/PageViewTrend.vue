@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { DAY_MS, TREND_DAYS } from '../site-config.js'
 
 const props = defineProps({
   points: {
@@ -8,12 +9,10 @@ const props = defineProps({
   },
   loading: Boolean,
   error: Boolean,
-  title: { type: String, default: '最近 60 天阅读趋势' },
+  title: { type: String, default: `最近 ${TREND_DAYS} 天阅读趋势` },
   unit: { type: String, default: '阅读' }
 })
 
-const bucketCount = 60
-const dayMs = 24 * 60 * 60 * 1000
 const chartContainer = ref(null)
 const chartWidth = ref(1)
 const chartHeight = 104
@@ -39,19 +38,19 @@ watch(chartContainer, (element) => {
 onBeforeUnmount(() => chartObserver?.disconnect())
 
 const normalizedPoints = computed(() => {
-  const latestBucket = Math.floor(Date.now() / dayMs) * dayMs
+  const latestBucket = Math.floor(Date.now() / DAY_MS) * DAY_MS
   const values = new Map()
 
   for (const point of props.points) {
     const ts = Number(point?.ts)
     const value = Number(point?.value)
     if (!Number.isFinite(ts) || !Number.isFinite(value)) continue
-    const day = Math.floor(ts / dayMs) * dayMs
+    const day = Math.floor(ts / DAY_MS) * DAY_MS
     values.set(day, (values.get(day) ?? 0) + value)
   }
 
-  return Array.from({ length: bucketCount }, (_, index) => {
-    const ts = latestBucket - (bucketCount - 1 - index) * dayMs
+  return Array.from({ length: TREND_DAYS }, (_, index) => {
+    const ts = latestBucket - (TREND_DAYS - 1 - index) * DAY_MS
     return { ts, value: Math.max(0, values.get(ts) ?? 0) }
   })
 })
@@ -63,7 +62,7 @@ const activeBuckets = computed(() => normalizedPoints.value.filter((point) => po
 
 const chartPoints = computed(() => {
   const usableHeight = chartHeight - chartVerticalPadding * 2
-  const slotWidth = chartWidth.value / bucketCount
+  const slotWidth = chartWidth.value / TREND_DAYS
   const barWidth = Math.max(1, slotWidth * 0.72)
   return normalizedPoints.value.map((point, index) => {
     const x = (index + 0.5) * slotWidth
@@ -105,7 +104,7 @@ const formatDate = (timestamp) => new Date(timestamp).toLocaleDateString('zh-CN'
           class="trend-chart"
           :viewBox="`0 0 ${chartWidth} ${chartHeight}`"
           role="img"
-          :aria-label="`最近60天共${totalReads}次${unit}，单日峰值${peakValue}次`"
+          :aria-label="`最近${TREND_DAYS}天共${totalReads}次${unit}，单日峰值${peakValue}次`"
         >
         <line x1="0" y1="94" :x2="chartWidth" y2="94" class="chart-axis" />
         <line x1="0" y1="52" :x2="chartWidth" y2="52" class="chart-grid" />
