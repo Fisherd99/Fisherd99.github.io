@@ -11,7 +11,6 @@
     "generate-nav": "node scripts/generate-nav-config.js",
     "generate-articles": "node scripts/generate-articles-list.js",
     "generate-llms": "node scripts/generate-llms-txt.js",
-    "pageview:api": "node scripts/pageview-api-server.mjs",
     "cf:pageview:dev": "wrangler dev cloudflare/pageview-worker.js --config cloudflare/wrangler.toml",
     "cf:pageview:deploy": "wrangler deploy --config cloudflare/wrangler.toml",
     "cf:pageview:d1:create": "wrangler d1 create fisherd-pageview-db --config cloudflare/wrangler.toml",

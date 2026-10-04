@@ -90,7 +90,7 @@ env:
 
 因此后续 push 到 `master` 的构建会自动注入线上 API。
 
-> 未设置 `PAGEVIEW_API_BASE` 时，不会写入任何 API meta，页面会自动回退本地快照模式。
+> `config.mts` 未设置 `PAGEVIEW_API_BASE` 时会默认指向线上 Worker。若要在本地禁用统计，请用空值覆盖：`PAGEVIEW_API_BASE= npm run docs:dev`，此时不注入任何 API meta，页面回退为“获取失败”。
 
 ## 7) 健康检查
 
@@ -99,7 +99,5 @@ env:
 
 ## 说明
 
-- 本地开发若要走本地 API：
-  - 启动接口：`npm run pageview:api`
-  - 启动站点：`PAGEVIEW_API_BASE=http://localhost:8787 npm run docs:dev`
+- 统计数据的权威来源是 Cloudflare Worker + D1；Busuanzi 为独立的第三方参考计数。
 - 前端已实现服务端优先 + 本地回退，不会因为 API 临时不可用而白屏。
