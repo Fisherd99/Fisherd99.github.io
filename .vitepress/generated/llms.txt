@@ -1,0 +1,23 @@
+# 卷心菜农场 —— Fisherd's blog
+
+> Cabbage Farm —— 记录物理、计算机与生活的个人博客
+
+本文件列出各页面的原始 Markdown 源文件地址，便于直接读取纯文本内容。
+
+- [主页](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/index.md)
+
+## 物理
+
+- [BerkeleyGW+qe运行BSE计算笔记](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/BerkeleyGW+qe.md): 记录自己使用BerkeleyGW+qe运行BSE计算的过程
+- [ABACUS+LibRPA运行BSE计算教程](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/abacus-librpa-bse-tutorial.md): 方便新手快速上手
+- [k空间和R空间的LRI矩阵元](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/k-r-space-lri-tensor.md): 关于k空间和R空间的变换关系，以及Local RI在两个表象下的变换关系
+- [BSE中full情形的对角化流程](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/bse-full-diagonalization.md): BSE计算中超越TDA近似的方法
+
+## 计算机
+
+- [服务器备忘录](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/server-notes.md): 关于配置服务器的一些记录
+- [gdb笔记](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/gdb.md): 调试C++程序的必备工具使用指南
+
+## 生活
+
+- [相册](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/photo-gallery.md): 个人摄影集

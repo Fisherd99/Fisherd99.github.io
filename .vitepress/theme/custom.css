@@ -696,8 +696,40 @@
   }
 }
 .VPDoc .title-last-updated {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
   margin: 8px 0 0px;
+}
+
+.VPDoc .title-last-updated-meta {
+  margin-left: auto;
   text-align: right;
+}
+
+.VPDoc .title-source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+.VPDoc .title-source-link:hover {
+  color: var(--vp-c-brand-2);
+  text-decoration: underline;
+}
+
+.VPDoc .title-source-link-icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: currentColor;
 }
 
 .VPDoc .title-last-updated + * {

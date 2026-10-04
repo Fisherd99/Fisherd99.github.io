@@ -14,9 +14,11 @@ vitepress/
 ├── .github/
 │   └── workflows/                # GitHub Pages deployment
 ├── .vitepress/
-│   ├── config.mts                # Site configuration
+│   ├── config.mts                # Site config (publicDir=../public; source links; llms.txt emit)
+│   ├── site-meta.js              # Shared pure constants/helpers for config/theme/scripts
 │   ├── generated/                # Auto-generated build inputs (DO NOT EDIT)
 │   │   ├── articles.json         # Homepage article metadata
+│   │   ├── llms.txt              # LLM index of raw Markdown URLs (published to /llms.txt)
 │   │   └── nav-config.js         # Navigation and sidebar config
 │   ├── theme/                    # Custom layout and styles
 │   │   ├── custom.css            # Global theme styles
@@ -31,14 +33,14 @@ vitepress/
 │   ├── cache/                    # VitePress build cache
 │   └── dist/                     # Built site output
 ├── md/                           # Content source directory
-│   ├── public/                   # Static assets (images)
 │   └── *.md                      # Markdown articles + homepage
+├── public/                       # Static assets published at the site root
 ├── package.json                  # Dependencies and scripts
 ├── scripts/
 │   ├── content-utils.mjs         # Shared frontmatter/file helpers
 │   ├── generate-articles-list.js # Generate homepage article metadata
-│   ├── generate-nav-config.js    # Generate navigation and sidebar config
-│   └── pageview-api-server.mjs   # Local page-view API fallback
+│   ├── generate-llms-txt.js      # Generate llms.txt raw-Markdown index
+│   └── generate-nav-config.js    # Generate navigation and sidebar config
 ├── cloudflare/
 │   ├── pageview-worker.js        # Page views, anti-abuse, history, visitor locations
 │   ├── schema.sql                # D1 counters, buckets, dedupe, rate limits, locations
@@ -51,7 +53,25 @@ Do not edit generated files directly:
 
 - `.vitepress/generated/nav-config.js`
 - `.vitepress/generated/articles.json`
+- `.vitepress/generated/llms.txt`
 - `.vitepress/dist/` and `.vitepress/cache/`
+
+Static assets live in the project-root `public/` (published at the site root), not
+`md/public/`. VitePress defaults `publicDir` to `<srcDir>/public`, so `config.mts`
+overrides it via `vite.publicDir`; reference assets with absolute URLs (`/images/...`).
+
+### Markdown source access for LLMs
+
+- `.vitepress/site-meta.js` is the shared, browser-safe module (no `fs`/`path`
+  imports, since the theme bundles it). It holds `SITE_TITLE`, `SITE_DESCRIPTION`,
+  `CATEGORY_ORDER`, the raw GitHub base `SOURCE_REPO_BASE`, and `rawMarkdownUrl()`;
+  import from config, theme, and scripts so these stay in sync.
+- `config.mts` injects a per-page `<link rel="alternate" type="text/markdown">` in
+  `transformPageData`, and the theme renders a "跳转源文件" link beside the
+  last-updated line, both pointing at the raw `.md` file (not the GitHub HTML view).
+- `scripts/generate-llms-txt.js` derives `.vitepress/generated/llms.txt`
+  (llmstxt.org format) from `articles.json`; the `vitepress:llms-txt` Vite plugin in
+  `config.mts` publishes it to `/llms.txt` (build asset + dev middleware).
 
 ## Commands
 
@@ -62,11 +82,20 @@ npm run docs:build
 npm run docs:preview
 npm run generate-nav
 npm run generate-articles
-npm run pageview:api
+npm run generate-llms
 npm run cf:pageview:dev
 npm run cf:pageview:d1:migrate:local
 npm run cf:pageview:d1:migrate
 npm run cf:pageview:deploy
+```
+
+Local development must not affect production statistics. `npm run docs:dev`
+defaults `PAGEVIEW_API_BASE` to the production Cloudflare Worker, so every page
+opened locally is counted in the production D1 database. Disable tracking for
+local runs:
+
+```bash
+PAGEVIEW_API_BASE= npm run docs:dev
 ```
 
 There is no separate lint or automated test suite. Use `npm run docs:build` as

@@ -1,5 +1,15 @@
 # 更新日志
 
+## 2026-10-04 - 文章页增加 Markdown 源文件入口，便于 LLM 直接读取
+
+- 文章标题下方的更新时间行左侧新增带 GitHub 图标的“跳转源文件”按钮，指向 `raw.githubusercontent.com` 上的原始 Markdown（`.../md/<path>.md`），而非 GitHub 的 HTML 渲染页，LLM/爬虫可拿到纯文本源文件。
+- `config.mts` 通过 `transformPageData` 为每页 `<head>` 注入 `<link rel="alternate" type="text/markdown" href="...">`；会解析 `<head>` 的 agent 无需点击即可发现源文件。
+- 新增 `scripts/generate-llms-txt.js`，依据 `articles.json` 按分类生成 `.vitepress/generated/llms.txt`（遵循 llmstxt.org 规范）；`config.mts` 中的 `vitepress:llms-txt` Vite 插件把它发布到站点根 `/llms.txt`（构建输出为资源，开发时经中间件提供）。
+- 新增共享模块 `.vitepress/site-meta.js`（浏览器安全，不引入 Node 内建模块），集中维护 `SITE_TITLE`、`SITE_DESCRIPTION`、`CATEGORY_ORDER`、`SOURCE_REPO_BASE` 与 `rawMarkdownUrl()`，供 `config.mts`、主题 `index.ts` 与各生成脚本复用，消除重复硬编码。
+- `package.json` 的 `docs:dev` / `docs:build` 链入 `generate-llms-txt.js`，并新增 `npm run generate-llms`。
+- 静态资源根目录从 `md/public/` 迁至项目根 `public/`：VitePress 默认把 `publicDir` 设为 `<srcDir>/public`，现于 `config.mts` 用 `vite.publicDir` 覆盖，让静态资源与内容源目录分离；资源引用均为绝对路径，URL 不变。
+- 退役本地阅读量兜底服务：删除 `scripts/pageview-api-server.mjs`、`npm run pageview:api` 及其数据目录 `public/api/`（其 `db.json` 原本会随新的 `public/` 被发布到线上）。统计完全以 Cloudflare Worker + D1 为准，Busuanzi 为独立第三方参考；同时修正 `DEPLOY_PAGEVIEW_API.md` 中关于 `PAGEVIEW_API_BASE` 未设置行为的描述。
+
 ## 2026-09-28 - 首页增加访问统计与访客地图，升级 Wrangler
 
 - 首页在文章分类列表后展示首页累计访问量、最近 24 小时访问量和近 60 天趋势；同时复用 Cloudflare 聚合访客地图与 MapMyVisitors 地图。
@@ -139,4 +149,4 @@ npm run docs:dev      # 自动生成后启动
 ---
 
 **维护者**: Fisherd
-**最后更新**: 2026-09-27
+**最后更新**: 2026-10-04

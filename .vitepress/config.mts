@@ -1,6 +1,34 @@
 import { defineConfig } from 'vitepress'
 import { katex } from '@mdit/plugin-katex'
+import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { navConfig, sidebarConfig } from './generated/nav-config.js'
+import { SITE_TITLE, SITE_DESCRIPTION, rawMarkdownUrl } from './site-meta.js'
+
+// llms.txt 由 scripts/generate-llms-txt.js 生成到 .vitepress/generated/，此处再把它
+// 发布到站点根：构建时作为资源输出，开发时经中间件直接提供。
+const llmsTxtFile = fileURLToPath(new URL('./generated/llms.txt', import.meta.url))
+const llmsTxtPlugin = {
+  name: 'vitepress:llms-txt',
+  configureServer(server: any) {
+    server.middlewares.use((req: any, res: any, next: any) => {
+      if (req.url?.split('?')[0] !== '/llms.txt') return next()
+      fs.readFile(llmsTxtFile, (err, data) => {
+        if (err) return next()
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+        res.end(data)
+      })
+    })
+  },
+  generateBundle(this: any) {
+    if (!fs.existsSync(llmsTxtFile)) return
+    this.emitFile({
+      type: 'asset',
+      fileName: 'llms.txt',
+      source: fs.readFileSync(llmsTxtFile, 'utf-8')
+    })
+  }
+}
 
 const pageviewApiBase = (process.env.PAGEVIEW_API_BASE ?? 'https://fisherd-pageview-api.fisherd.workers.dev').replace(/\/$/, '')
 const pageviewHead = pageviewApiBase
@@ -30,8 +58,32 @@ export default defineConfig({
   cleanUrls: true,
   lang: "zh-CN",
   head: [...pageviewHead, ...cloudflareAnalyticsHead],
-  title: "卷心菜农场 —— Fisherd's blog",
-  description: "Cabbage Farm",
+
+  vite: {
+    // 默认 publicDir 是 <srcDir>/public（即 md/public）；改为项目根的 public/，
+    // 让静态资源与内容源目录分离。使用绝对路径以免相对 root(=srcDir) 解析。
+    publicDir: fileURLToPath(new URL('../public', import.meta.url)),
+    plugins: [llmsTxtPlugin]
+  },
+
+  // 每页注入指向原始 Markdown 的关联链接，供 LLM / 爬虫在无需点击的情况下发现纯文本源文件。
+  // https://llmstxt.org/
+  transformPageData(pageData) {
+    const relativePath = pageData.relativePath
+    if (!relativePath) return
+    pageData.frontmatter.head ??= []
+    pageData.frontmatter.head.push([
+      'link',
+      {
+        rel: 'alternate',
+        type: 'text/markdown',
+        href: rawMarkdownUrl(relativePath),
+        title: 'Markdown source'
+      }
+    ])
+  },
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
 
   markdown: {
     lineNumbers: true,

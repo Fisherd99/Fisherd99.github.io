@@ -1,5 +1,17 @@
 [
   {
+    "title": "BerkeleyGW+qe运行BSE计算笔记",
+    "link": "/BerkeleyGW+qe",
+    "description": "记录自己使用BerkeleyGW+qe运行BSE计算的过程",
+    "tags": [
+      "BSE",
+      "GW",
+      "软件学习"
+    ],
+    "date": "2026-10-04",
+    "category": "物理"
+  },
+  {
     "title": "ABACUS+LibRPA运行BSE计算教程",
     "link": "/abacus-librpa-bse-tutorial",
     "description": "方便新手快速上手",

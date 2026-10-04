@@ -14,6 +14,10 @@ export const navConfig = [
         "link": "/abacus-librpa-bse-tutorial"
       },
       {
+        "text": "BerkeleyGW+qe运行BSE计算笔记",
+        "link": "/BerkeleyGW+qe"
+      },
+      {
         "text": "BSE中full情形的对角化流程",
         "link": "/bse-full-diagonalization"
       },
@@ -55,6 +59,10 @@ export const sidebarConfig = [
       {
         "text": "ABACUS+LibRPA运行BSE计算教程",
         "link": "/abacus-librpa-bse-tutorial"
+      },
+      {
+        "text": "BerkeleyGW+qe运行BSE计算笔记",
+        "link": "/BerkeleyGW+qe"
       },
       {
         "text": "BSE中full情形的对角化流程",

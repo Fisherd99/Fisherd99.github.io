@@ -7,6 +7,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { getAllMarkdownFiles, parseFrontmatter } from './content-utils.mjs'
+import { CATEGORY_ORDER } from '../.vitepress/site-meta.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -14,7 +15,6 @@ const projectRoot = path.resolve(__dirname, '..')
 
 const mdDir = path.join(projectRoot, 'md')
 const navOutputFile = path.join(projectRoot, '.vitepress', 'generated', 'nav-config.js')
-const categoryOrder = ['物理', '计算机', '生活']
 const specialPages = [{ text: '主页', link: '/' }]
 
 function generateNavConfig() {
@@ -45,7 +45,7 @@ function generateNavConfig() {
   const nav = [...specialPages]
   const sidebar = []
 
-  for (const category of categoryOrder) {
+  for (const category of CATEGORY_ORDER) {
     const items = categoriesMap.get(category)
     if (!items) continue
     nav.push({ text: category, items })
@@ -53,7 +53,7 @@ function generateNavConfig() {
   }
 
   for (const [category, items] of categoriesMap) {
-    if (categoryOrder.includes(category)) continue
+    if (CATEGORY_ORDER.includes(category)) continue
     nav.push({ text: category, items })
     sidebar.push({ text: category, collapsed: false, items })
   }
