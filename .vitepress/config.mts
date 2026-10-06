@@ -1,6 +1,8 @@
 import { defineConfig } from 'vitepress'
 import { katex } from '@mdit/plugin-katex'
+import { alphaTab as alphaTabVitePlugins } from '@coderline/alphatab-vite'
 import fs from 'node:fs'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { navConfig, sidebarConfig } from './generated/nav-config.js'
 import { SITE_TITLE, SITE_DESCRIPTION, rawMarkdownUrl } from './site-meta.js'
@@ -27,6 +29,33 @@ const llmsTxtPlugin = {
       type: 'asset',
       fileName: 'llms.txt',
       source: fs.readFileSync(llmsTxtFile, 'utf-8')
+    })
+  }
+}
+
+// alphaTab 的合成器 Worker 由 `new URL("./alphaTab.worker.mjs", import.meta.url)` 构造，
+// 生产构建由官方 Vite 插件重写并输出该文件；开发模式下没有这一步，浏览器的请求会落到
+// SPA 兜底 HTML，Worker 把 HTML 当模块解析会失败 —— 而 `new Worker()` 对坏 URL 不抛错，
+// 症状是"静默无声"。这里在开发服务器上按请求路径补上这两个文件。
+// Worker 自身 `import "./alphaTab.core.mjs"`，所以两个都要给。
+const alphaTabDistDir = fileURLToPath(
+  new URL('../node_modules/@coderline/alphatab/dist/', import.meta.url)
+)
+const alphaTabRuntimeFiles = ['alphaTab.worker.mjs', 'alphaTab.core.mjs', 'alphaTab.worklet.mjs']
+
+const alphaTabRuntimePlugin = {
+  name: 'vitepress:alphatab-runtime',
+  apply: 'serve' as const,
+  configureServer(server: any) {
+    server.middlewares.use((req: any, res: any, next: any) => {
+      const pathname = (req.url ?? '').split('?')[0]
+      const name = alphaTabRuntimeFiles.find((file) => pathname.endsWith(`/${file}`))
+      if (!name) return next()
+      fs.readFile(path.join(alphaTabDistDir, name), (err, data) => {
+        if (err) return next()
+        res.setHeader('Content-Type', 'text/javascript')
+        res.end(data)
+      })
     })
   }
 }
@@ -63,7 +92,17 @@ export default defineConfig({
     // 默认 publicDir 是 <srcDir>/public（即 md/public）；改为项目根的 public/，
     // 让静态资源与内容源目录分离。使用绝对路径以免相对 root(=srcDir) 解析。
     publicDir: fileURLToPath(new URL('../public', import.meta.url)),
-    plugins: [llmsTxtPlugin]
+    plugins: [
+      llmsTxtPlugin,
+      alphaTabRuntimePlugin,
+      // alphaTab 的合成器始终跑在 Web Worker 里（没有设置项能关掉），Worker 由
+      // `new URL("./alphaTab.worker.mjs", import.meta.url)` 构造 —— 打包后这个相对路径
+      // 指向 assets/chunks/，而 Vite 不会输出该文件，也不输出它 import 的 alphaTab.core.mjs。
+      // `new Worker()` 对坏 URL 不会同步抛错，所以症状是"静默无声"而不是报错。
+      // 官方插件负责把这两个文件补到正确位置，并重写相关的 import.meta.url。
+      // assetOutputDir:false —— 乐谱字体与音源音色由我们自己放在 public/alphatab/ 统一管理。
+      ...alphaTabVitePlugins({ assetOutputDir: false })
+    ]
   },
 
   // 每页注入指向原始 Markdown 的关联链接，供 LLM / 爬虫在无需点击的情况下发现纯文本源文件。

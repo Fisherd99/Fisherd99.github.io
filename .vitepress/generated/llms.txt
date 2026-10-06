@@ -21,3 +21,7 @@
 ## 生活
 
 - [相册](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/photo-gallery.md): 个人摄影集
+
+## 音乐
+
+- [旅の途中（口琴）](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/tabi-no-tochu.md): 用 12 孔半音阶口琴吹奏《狼と香辛料》主题曲《旅の途中》，附可跟随播放的乐谱与 MusicXML 源文件

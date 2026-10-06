@@ -7,8 +7,8 @@
 - Navigation and the homepage article list are generated from frontmatter.
 - The project uses ES modules and Node.js 22 in CI.
 
-## Main structure
 ## Code Architecture
+
 ```
 vitepress/
 ├── .github/
@@ -20,10 +20,17 @@ vitepress/
 │   ├── generated/                # Auto-generated build inputs (DO NOT EDIT)
 │   │   ├── articles.json         # Homepage article metadata
 │   │   ├── llms.txt              # LLM index of raw Markdown URLs (published to /llms.txt)
+│   │   ├── soundfont-hashes.mjs   # Generated SHA-256 manifest for bundled soundfonts
 │   │   └── nav-config.js         # Navigation and sidebar config
 │   ├── theme/                    # Custom layout and styles
 │   │   ├── composables/          # Browser integrations (zoom, code lines, busuanzi, stats, title meta)
 │   │   ├── custom.css            # Global theme styles
+│   │   ├── BilibiliPlayer.vue    # Lazy-loaded Bilibili embed
+│   │   ├── ScorePlayer.vue       # Music score page composition
+│   │   ├── score-player/         # Playback adapter, lifecycle, shared controls, jianpu/print rendering
+│   │   │   ├── alphatab.mjs      # Public alphaTab integration and instrument catalog
+│   │   │   ├── useScorePlayer.js # Vue player state, lazy initialization and teardown
+│   │   │   └── soundfonts.mjs    # SHA-256 checks, shared downloads, per-player installations
 │   │   ├── HomeArticlesAuto.vue  # Homepage article list
 │   │   ├── LazyGiscus.vue        # Lazy-loaded comments
 │   │   ├── PageViewTrend.vue     # 60-day page-view chart
@@ -36,12 +43,25 @@ vitepress/
 │   └── dist/                     # Built site output
 ├── md/                           # Markdown articles + homepage
 ├── public/                       # Static assets published at the site root
+│   ├── alphatab/                 # Bravura, soundfonts and upstream notices
+│   └── scores/                   # Sources and generated playback assets
+│       ├── <slug>/
+│       │   ├── score.txt         # Hand-authored jianpu source
+│       │   ├── score.musicxml    # Generated score for playback/download
+│       │   └── score.json        # Generated jianpu layout
+│       └── README.md             # Notation syntax reference
 ├── package.json                  # Dependencies and scripts
 ├── scripts/
 │   ├── content-utils.mjs         # Shared frontmatter/file helpers
 │   ├── generate-articles-list.js # Generate homepage article metadata
 │   ├── generate-llms-txt.js      # Generate llms.txt raw-Markdown index
-│   └── generate-nav-config.js    # Generate navigation and sidebar config
+│   ├── generate-nav-config.js    # Generate navigation and sidebar config
+│   ├── generate-scores.js        # jianpu → MusicXML, with --verify round-trip check
+│   ├── score-utils.mjs           # Jianpu parsing / measure validation / MusicXML emit
+│   ├── prepare-score-soundfonts.mjs # Extract instrument presets from upstream soundfonts
+│   ├── generate-soundfont-hashes.mjs # Hash menu soundfonts for runtime verification
+│   ├── score-player.test.mjs     # Playback, notation and real audio regression tests
+│   └── score-soundfonts.test.mjs # Shared cache and installation lifecycle tests
 ├── cloudflare/
 │   ├── pageview-worker.js        # Page views, anti-abuse, history, visitor locations
 │   ├── schema.sql                # D1 counters, buckets, dedupe, rate limits, locations
@@ -52,6 +72,8 @@ vitepress/
 
 Do not edit generated files directly:
 
+- `.vitepress/generated/soundfont-hashes.mjs`
+- `public/scores/*/score.musicxml` and `public/scores/*/score.json`
 - `.vitepress/generated/nav-config.js`
 - `.vitepress/generated/articles.json`
 - `.vitepress/generated/llms.txt`
@@ -91,6 +113,9 @@ npm run docs:preview
 npm run generate-nav
 npm run generate-articles
 npm run generate-llms
+npm run generate-scores
+npm run generate-soundfont-hashes
+npm run test:scores
 npm run cf:pageview:dev
 npm run cf:pageview:d1:migrate:local
 npm run cf:pageview:d1:migrate
@@ -106,10 +131,15 @@ local runs:
 PAGEVIEW_API_BASE= npm run docs:dev
 ```
 
-There is no separate lint or automated test suite. Use `npm run docs:build` as
-the baseline verification and exercise Worker endpoints when analytics changes.
+## Regression Test
 
-## Content
+Run `npm run test:scores` after score playback/parser changes or alphaTab/soundfont upgrades.
+If score sources or generators changed, run `node scripts/generate-scores.js --verify` first; never hand-edit generated assets.
+For substantive bug fixes, add behavior-focused regression coverage; resolve failures without weakening assertions merely to pass.
+Run `npm run docs:build` separately (it does not run these tests); verify affected audio, scrolling, and controls in the browser with production tracking disabled.
+Unrelated article/style edits need no score tests; exercise Worker endpoints when analytics changes.
+
+## Markdown Content
 
 Articles belong in `md/` and require frontmatter like:
 
@@ -119,7 +149,7 @@ title: Article Title
 lang: zh-CN
 date: YYYY-MM-DD
 author: Fisherd
-categories: 物理 # 物理 / 计算机 / 生活
+categories: 物理 # 物理 / 计算机 / 生活 / 音乐
 tags:
   - tag
 description: Article description
@@ -130,6 +160,24 @@ description: Article description
 - Prefer optimized WebP previews, retain the original via `data-zoom-src`, and
 specify dimensions and lazy loading on raw `<img>` elements.
 - KaTeX renders mathematics at build time.
+
+### Article paths must stay single-segment
+
+`cloudflare/pageview-worker.js` only accepts single-segment lowercase kebab paths
+(`ARTICLE_PATH_PATTERN`). An article at `/music/foo` returns `400 invalid_path`
+and that page's analytics silently stop working. Keep landing pages at the top
+level (`/tabi-no-tochu`); express grouping through `categories` and the nav, not
+through the URL.
+
+### Music section
+
+- Edit only `public/scores/<slug>/score.txt`; syntax is in `public/scores/README.md`. Generate `score.musicxml`/`score.json` in the same folder; do not hand-edit outputs. Build verifies beat counts, pitches, programs and repeats without auto-padding.
+- Keep `ScorePlayer.vue` thin: `useScorePlayer.js` owns lifecycle/state; `alphatab.mjs` owns integration; shared transport/settings and jianpu/print components own their views.
+- Resources load near the viewport. `soundfonts.mjs` verifies SHA-256 before sharing download bytes across routes, evicts failures, and serializes per-player installations until acknowledgement; never abort shared downloads on unmount.
+- Rebuild instrument subsets with `prepare-score-soundfonts.mjs <upstream.sf2/sf3>`, then run `npm run generate-soundfont-hashes` (also in dev/build). Preserve samples/licenses; never load full Sonivox alongside MS Basic.
+- Change programs AND Instrument automations, then issue ordered MIDI load → seek → optional play; retain expanded playback position and intent across Worker notifications. Avoid timer-based restoration.
+- Use public `customScrollHandler`/`stopScrolling` for follow mode; index public `tickCache` on `midiLoad`. Avoid private internals and the recursive `midiLoaded` getter in alphaTab 1.8.4.
+- Keep both alphaTab build/dev Worker plugins and the invalid-jQuery guard. Check playback on dev or a plain static server, rather than `docs:preview`.
 
 ## Analytics invariants
 

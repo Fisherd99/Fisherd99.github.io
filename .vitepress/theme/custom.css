@@ -494,3 +494,43 @@
 .VPDocAsideOutline .outline-marker {
   transform: translateY(-32px);
 }
+
+/* 乐谱播放器主要靠 alphaTab 的 api.print() 导出 A4 排版的 PDF（它自带打印视图）。
+   这里的 @media print 是兜底：用户在文章页直接 Ctrl+P 时，别把导航、评论和统计印进去。 */
+@media print {
+  .VPNav,
+  .VPSidebar,
+  .VPLocalNav,
+  .VPFooter,
+  .VPDocAside,
+  .VPDocFooter,
+  .comments-container,
+  .home-analytics,
+  .bilibili-player,
+  .score-toolbar,
+  .score-header,
+  .score-status {
+    display: none !important;
+  }
+
+  .VPContent,
+  .VPPage,
+  .VPDoc,
+  .container,
+  .content,
+  .content-container {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .score-player {
+    border: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .score-surface {
+    overflow: visible !important;
+  }
+}

@@ -46,6 +46,15 @@ export const navConfig = [
       {
         "text": "相册",
         "link": "/photo-gallery"
+      },
+      {
+        "text": "音乐",
+        "items": [
+          {
+            "text": "旅の途中（口琴）",
+            "link": "/tabi-no-tochu"
+          }
+        ]
       }
     ]
   }
@@ -95,6 +104,16 @@ export const sidebarConfig = [
       {
         "text": "相册",
         "link": "/photo-gallery"
+      },
+      {
+        "text": "音乐",
+        "collapsed": false,
+        "items": [
+          {
+            "text": "旅の途中（口琴）",
+            "link": "/tabi-no-tochu"
+          }
+        ]
       }
     ]
   }

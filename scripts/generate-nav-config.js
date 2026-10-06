@@ -7,7 +7,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { getAllMarkdownFiles, parseFrontmatter } from './content-utils.mjs'
-import { CATEGORY_ORDER } from '../.vitepress/site-meta.js'
+import { CATEGORY_ORDER, ROOT_CATEGORIES, getCategoryChildren } from '../.vitepress/site-meta.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -16,6 +16,30 @@ const projectRoot = path.resolve(__dirname, '..')
 const mdDir = path.join(projectRoot, 'md')
 const navOutputFile = path.join(projectRoot, '.vitepress', 'generated', 'nav-config.js')
 const specialPages = [{ text: '主页', link: '/' }]
+
+// 某分类的直属文章（categoriesMap 中存的已是 { text, link }）。
+const ownItems = (categoriesMap, title) => categoriesMap.get(title) || []
+
+// sidebar 分组：VitePress 的 sidebar item 支持任意深度的 items，故写成递归。
+function buildSidebarGroup(categoriesMap, title) {
+  const children = getCategoryChildren(title)
+    .map((child) => buildSidebarGroup(categoriesMap, child.title))
+    .filter(Boolean)
+
+  const items = [...ownItems(categoriesMap, title), ...children]
+  return items.length ? { text: title, collapsed: false, items } : null
+}
+
+// nav 分组：VitePress 的 nav 只支持两层，子分类作为嵌套的 { text, items }。
+// 另外 NavItemWithLink 上 items 是 never，所以父分类只能当容器、不能自身带链接。
+function buildNavGroup(categoriesMap, title) {
+  const children = getCategoryChildren(title)
+    .map((child) => ({ text: child.title, items: ownItems(categoriesMap, child.title) }))
+    .filter((child) => child.items.length > 0)
+
+  const items = [...ownItems(categoriesMap, title), ...children]
+  return items.length ? { text: title, items } : null
+}
 
 function generateNavConfig() {
   console.log('📂 扫描 markdown 文件...')
@@ -45,15 +69,20 @@ function generateNavConfig() {
   const nav = [...specialPages]
   const sidebar = []
 
-  for (const category of CATEGORY_ORDER) {
-    const items = categoriesMap.get(category)
-    if (!items) continue
-    nav.push({ text: category, items })
-    sidebar.push({ text: category, collapsed: false, items })
+  // 已由 CATEGORIES 声明的分类标题（含子分类），避免兜底分支重复输出。
+  const declared = new Set(CATEGORY_ORDER)
+
+  // 先按 CATEGORIES 的树输出，二级分类自然嵌在父分类之下。
+  for (const category of ROOT_CATEGORIES) {
+    const navGroup = buildNavGroup(categoriesMap, category.title)
+    const sidebarGroup = buildSidebarGroup(categoriesMap, category.title)
+    if (navGroup) nav.push(navGroup)
+    if (sidebarGroup) sidebar.push(sidebarGroup)
   }
 
+  // 兜底：frontmatter 里出现、但未在 CATEGORIES 声明的分类，按平铺处理。
   for (const [category, items] of categoriesMap) {
-    if (CATEGORY_ORDER.includes(category)) continue
+    if (declared.has(category)) continue
     nav.push({ text: category, items })
     sidebar.push({ text: category, collapsed: false, items })
   }

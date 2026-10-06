@@ -3,14 +3,39 @@ import { ref } from 'vue'
 import articlesData from '../generated/articles.json'
 import { CATEGORIES } from '../site-meta.js'
 
-const categories = CATEGORIES.map((category) => ({
+// 先按分类模型算出每类自己的文章，再组装成「根分类 + 子分类」的树。
+const withArticles = CATEGORIES.map((category) => ({
   ...category,
   articles: articlesData
     .filter((article) => article.category === category.title)
     .sort((a, b) => new Date(b.date) - new Date(a.date))
-})).filter((category) => category.articles.length > 0)
+}))
 
-const expandedCategories = ref(new Set(categories.map((category) => category.id)))
+// 每个根分类下摊平成若干「组」：第一组是它自己的直属文章（不显示组标题），
+// 之后是各子分类。这样卡片标记只需写一遍。
+const toGroup = (category, heading) => ({
+  id: category.id,
+  heading,
+  title: category.title,
+  icon: category.icon,
+  color: category.color,
+  articles: category.articles
+})
+
+const categories = withArticles
+  .filter((category) => !category.parent)
+  .map((category) => ({
+    ...category,
+    groups: [
+      toGroup(category, false),
+      ...withArticles
+        .filter((child) => child.parent === category.title)
+        .map((child) => toGroup(child, true))
+    ].filter((group) => group.articles.length > 0)
+  }))
+  .filter((category) => category.groups.length > 0)
+
+const expandedCategories = ref(new Set(withArticles.map((category) => category.id)))
 
 const toggleCategory = (categoryId) => {
   if (expandedCategories.value.has(categoryId)) {
@@ -48,7 +73,7 @@ const isExpanded = (categoryId) => {
               {{ category.icon }}
               </span>
               <span class="category-title">{{ category.title }}</span>
-              <span class="article-count">({{ category.articles.length }} 篇)</span>
+              <span class="article-count">({{ category.groups.reduce((total, group) => total + group.articles.length, 0) }} 篇)</span>
             </span>
             <span class="expand-icon" :class="{ expanded: isExpanded(category.id) }" aria-hidden="true">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -63,33 +88,46 @@ const isExpanded = (categoryId) => {
           :id="`${category.id}-articles`"
           class="articles-list"
         >
-          <a
-            v-for="article in category.articles"
-            :key="article.link"
-            :href="article.link"
-            class="article-card"
-          >
-            <div class="article-content">
-              <h3 class="article-title">{{ article.title }}</h3>
-              <p v-if="article.description" class="article-description">
-                {{ article.description }}
-              </p>
-              <div v-if="article.tags && article.tags.length > 0" class="article-tags">
-                <span
-                  v-for="tag in article.tags"
-                  :key="tag"
-                  class="article-tag"
-                >
-                  {{ tag }}
-                </span>
+          <template v-for="group in category.groups" :key="group.id">
+            <h3
+              v-if="group.heading"
+              :id="`${group.id}-articles`"
+              class="subcategory-heading"
+              :style="{ '--category-color': group.color }"
+            >
+              <span class="category-icon" aria-hidden="true">{{ group.icon }}</span>
+              <span class="subcategory-title">{{ group.title }}</span>
+              <span class="article-count">({{ group.articles.length }} 篇)</span>
+            </h3>
+            <a
+              v-for="article in group.articles"
+              :key="article.link"
+              :href="article.link"
+              class="article-card"
+              :style="{ '--category-color': group.color }"
+            >
+              <div class="article-content">
+                <h4 class="article-title">{{ article.title }}</h4>
+                <p v-if="article.description" class="article-description">
+                  {{ article.description }}
+                </p>
+                <div v-if="article.tags && article.tags.length > 0" class="article-tags">
+                  <span
+                    v-for="tag in article.tags"
+                    :key="tag"
+                    class="article-tag"
+                  >
+                    {{ tag }}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div class="article-arrow">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-              </svg>
-            </div>
-          </a>
+              <div class="article-arrow">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+              </div>
+            </a>
+          </template>
         </div>
       </div>
     </div>
@@ -217,6 +255,28 @@ const isExpanded = (categoryId) => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+}
+
+/* Subcategory heading (二级分类) */
+.subcategory-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin: var(--spacing-sm) 0 0;
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--c-border-light);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.subcategory-heading .category-icon {
+  width: 22px;
+  height: 22px;
+  font-size: 0.875rem;
+}
+
+.subcategory-title {
+  color: var(--c-text-primary);
 }
 
 /* Article Card */

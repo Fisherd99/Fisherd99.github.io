@@ -1,0 +1,175 @@
+/**
+ * 扫描 public/scores/<slug>/score.txt，同目录输出 score.musicxml 与 score.json。
+ *
+ * 运行方式：
+ *   node scripts/generate-scores.js            生成
+ *   node scripts/generate-scores.js --verify   生成后用 alphaTab 做往返校验
+ *
+ * 任何解析、拍数或音域错误都会让进程以非 0 退出，便于在 docs:build 里当校验用。
+ * 校验而不自动修补是刻意的：自动补休止会悄悄改变音乐。
+ */
+
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { parseScoreText, tokenize, buildMeasures, buildDisplay, toMusicXml } from './score-utils.mjs'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const projectRoot = path.resolve(__dirname, '..')
+const scoresDir = path.join(projectRoot, 'public', 'scores')
+const outputDir = path.join(projectRoot, 'public', 'scores')
+const verify = process.argv.includes('--verify')
+
+/** 找出所有 public/scores/<slug>/score.txt。 */
+function findScoreSources() {
+  if (!fs.existsSync(scoresDir)) return []
+  return fs
+    .readdirSync(scoresDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => ({ slug: entry.name, file: path.join(scoresDir, entry.name, 'score.txt') }))
+    .filter(({ file }) => fs.existsSync(file))
+}
+
+async function verifyWithAlphaTab(xml, built, meta, slug) {
+  const alphaTab = await import('@coderline/alphatab')
+  const settings = new alphaTab.Settings()
+  const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(
+    new Uint8Array(Buffer.from(xml, 'utf-8')),
+    settings
+  )
+
+  const problems = []
+  const track = score.tracks[0]
+  const staff = track.staves[0]
+
+  if (score.masterBars.length !== built.measures.length) {
+    problems.push(`小节数：MusicXML ${built.measures.length}，alphaTab 读回 ${score.masterBars.length}`)
+  }
+
+  const expectedProgram = Number(meta.program ?? 23) - 1 // alphaTab 用 0-based
+  if (track.playbackInfo.program !== expectedProgram) {
+    problems.push(`音色：期望 ${expectedProgram}，读回 ${track.playbackInfo.program}`)
+  }
+
+  const expectedMidi = built.measures.flatMap((measure) =>
+    measure.events.filter((event) => event.kind === 'note').map((event) => event.midi)
+  )
+  const actualMidi = staff.bars.flatMap((bar) =>
+    bar.voices[0].beats.flatMap((beat) =>
+      beat.notes.filter((note) => !note.isRest).map((note) => note.realValue)
+    )
+  )
+  if (expectedMidi.join(',') !== actualMidi.join(',')) {
+    problems.push(`音高序列不一致：\n    期望 ${expectedMidi.join(' ')}\n    读回 ${actualMidi.join(' ')}`)
+  }
+
+  for (const measure of built.measures) {
+    const masterBar = staff.bars[measure.measureIndex]?.masterBar
+    if (!masterBar) continue
+    if (measure.repeatEnd && masterBar.repeatCount !== measure.repeatTimes) {
+      problems.push(`第 ${measure.measureIndex + 1} 小节：反复次数期望 ${measure.repeatTimes}，读回 ${masterBar.repeatCount}`)
+    }
+    if (measure.repeatStart && !masterBar.isRepeatStart) {
+      problems.push(`第 ${measure.measureIndex + 1} 小节：反复开始标记丢失`)
+    }
+  }
+
+  if (problems.length) {
+    console.error(`  ✗ ${slug} 往返校验未通过：`)
+    for (const problem of problems) console.error(`      ${problem}`)
+    return false
+  }
+
+  console.log(`  ✓ ${slug} 往返校验通过（${score.masterBars.length} 小节，音色 ${track.playbackInfo.program}，${expectedMidi.length} 个音）`)
+  return true
+}
+
+async function main() {
+  const sources = findScoreSources()
+  if (sources.length === 0) {
+    console.log('📄 public/scores/ 下没有找到任何 score.txt，跳过。')
+    return
+  }
+
+  console.log(`📄 扫描到 ${sources.length} 份简谱...`)
+  fs.mkdirSync(outputDir, { recursive: true })
+
+  let failed = false
+
+  for (const { slug, file } of sources) {
+    const text = fs.readFileSync(file, 'utf-8')
+    const { meta, body } = parseScoreText(text)
+    const tokens = tokenize(body)
+    const built = buildMeasures(tokens, meta)
+
+    if (built.errors.length) {
+      console.error(`  ✗ ${slug} 有 ${built.errors.length} 处问题：`)
+      for (const error of built.errors) console.error(`      ${error}`)
+      failed = true
+      continue
+    }
+
+    // MusicXML 保留反复记号（五线谱上要显示它们）。
+    // "播放位置 ↔ 写谱位置"的换算交给前端用 alphaTab 的 MidiTickLookup 完成 ——
+    // 那是 alphaTab 自己生成 MIDI 时建的查表，含反复展开，必然与合成器时间轴一致。
+    const xml = toMusicXml(built, meta)
+    const outputFile = path.join(outputDir, slug, 'score.musicxml')
+    fs.writeFileSync(outputFile, xml, 'utf-8')
+
+    // 简谱显示模型：与 MusicXML 出自同一 token 流，音符顺序一一对应。
+    // 前端靠"第 N 个音"把播放位置映射到简谱高亮，所以这里必须断言数量一致。
+    const display = buildDisplay(tokens, meta)
+    // 只数真正的音符：反复记号现在也作为条目混在 notes 里
+    const displayCount = display.reduce(
+      (total, section) =>
+        total + section.phrases.reduce((n, phrase) => n + phrase.notes.filter((x) => x.kind === 'note').length, 0),
+      0
+    )
+    const musicCount = built.measures.reduce((total, measure) => total + measure.events.length, 0)
+    if (displayCount !== musicCount) {
+      console.error(`  ✗ ${slug} 简谱与 MusicXML 的音符数不一致：简谱 ${displayCount}，乐谱 ${musicCount}`)
+      failed = true
+      continue
+    }
+
+    fs.writeFileSync(
+      path.join(outputDir, slug, 'score.json'),
+      JSON.stringify(
+        {
+          title: meta.title ?? slug,
+          subtitle: meta.subtitle ?? '',
+          time: meta.time ?? '4/4',
+          tempo: Number(meta.tempo) || null,
+          sections: display
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    )
+
+    const noteCount = built.measures.reduce(
+      (sum, measure) => sum + measure.events.filter((event) => event.kind === 'note').length,
+      0
+    )
+    const midis = built.measures.flatMap((measure) =>
+      measure.events.filter((event) => event.kind === 'note').map((event) => event.midi)
+    )
+    const range = midis.length ? `${Math.min(...midis)}–${Math.max(...midis)}` : '（无音符）'
+    console.log(
+      `  ✓ ${slug}：${built.measures.length} 小节 / ${noteCount} 个音 / MIDI 范围 ${range} → ${path.relative(projectRoot, outputFile)}`
+    )
+
+    if (verify && !(await verifyWithAlphaTab(xml, built, meta, slug))) failed = true
+  }
+
+  if (failed) {
+    console.error('\n❌ 简谱生成未通过。')
+    process.exitCode = 1
+    return
+  }
+  console.log('\n✅ 简谱生成完成。')
+}
+
+await main()

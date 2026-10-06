@@ -1,5 +1,16 @@
 [
   {
+    "title": "旅の途中（口琴）",
+    "link": "/tabi-no-tochu",
+    "description": "用 12 孔半音阶口琴吹奏《狼と香辛料》主题曲《旅の途中》，附可跟随播放的乐谱与 MusicXML 源文件",
+    "tags": [
+      "口琴",
+      "音乐"
+    ],
+    "date": "2026-10-05",
+    "category": "音乐"
+  },
+  {
     "title": "BerkeleyGW+qe运行BSE计算笔记",
     "link": "/BerkeleyGW+qe",
     "description": "记录自己使用BerkeleyGW+qe运行BSE计算的过程",
