@@ -1,44 +1,19 @@
-import fs from 'fs'
-import path from 'path'
-
+import fs from 'node:fs'
+import path from 'node:path'
+import { parse } from 'yaml'
 export const parseFrontmatter = (content) => {
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
+  const match = content.replace(/^\uFEFF/, '').match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)
   if (!match) return null
-
-  const data = {}
-  let currentKey = null
-
-  for (const rawLine of match[1].split(/\r?\n/)) {
-    const line = rawLine.trim()
-    if (!line) continue
-
-    if (line.startsWith('- ') && currentKey) {
-      if (!Array.isArray(data[currentKey])) data[currentKey] = []
-      data[currentKey].push(line.slice(2).trim().replace(/^["']|["']$/g, ''))
-      continue
-    }
-
-    const colonIndex = line.indexOf(':')
-    if (colonIndex < 0) continue
-
-    currentKey = line.slice(0, colonIndex).trim()
-    data[currentKey] = line.slice(colonIndex + 1).trim().replace(/^["']|["']$/g, '')
-  }
-
+  const data = parse(match[1], { uniqueKeys: true })
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Frontmatter must be a YAML mapping')
   return data
 }
-
 export const getAllMarkdownFiles = (directory) => {
   const files = []
-
-  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name, 'en'))) {
     const fullPath = path.join(directory, entry.name)
-    if (entry.isDirectory()) {
-      files.push(...getAllMarkdownFiles(fullPath))
-    } else if (entry.name.endsWith('.md') && entry.name !== 'index.md') {
-      files.push(fullPath)
-    }
+    if (entry.isDirectory()) files.push(...getAllMarkdownFiles(fullPath))
+    else if (entry.name.endsWith('.md') && entry.name !== 'index.md') files.push(fullPath)
   }
-
   return files
 }

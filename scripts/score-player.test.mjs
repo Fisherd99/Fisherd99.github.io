@@ -4,10 +4,19 @@ import fs from 'node:fs'
 import { createHash } from 'node:crypto'
 import * as alphaTab from '@coderline/alphatab'
 import { INSTRUMENTS, configureScoreScroll, applyScoreInstrument, changeScoreInstrument, createScoreIndex, indexScoreLayout, guardScoreUiEvents } from '../.vitepress/theme/score-player/alphatab.mjs'
-import { groupJianpuPrintRows, findJianpuPrintRow } from '../.vitepress/theme/score-player/jianpu-print.mjs'
+import { parse } from '@vue/compiler-sfc'
 import soundFontHashes from '../.vitepress/generated/soundfont-hashes.mjs'
 import { createSoundFontLoader } from '../.vitepress/theme/score-player/soundfonts.mjs'
 import { parseScoreText, parsePitchToken, durationOf, tokenize, buildMeasures, buildDisplay, toMusicXml } from './score-utils.mjs'
+
+// 从组件普通脚本加载实际导出的纯函数，不复制显示/打印算法。
+const { descriptor, errors } = parse(fs.readFileSync(new URL('../.vitepress/theme/score-player/JianpuView.vue', import.meta.url), 'utf8'))
+assert.deepEqual(errors, [])
+assert.ok(descriptor.script)
+const { groupJianpuRows, findJianpuRow } = await import(
+  'data:text/javascript;base64,' + Buffer.from(descriptor.script.content).toString('base64')
+)
+
 
 function loadScore(settings = new alphaTab.Settings()) {
   return alphaTab.importer.ScoreLoader.loadScoreFromBytes(
@@ -39,19 +48,36 @@ test('第三方脚本留下 undefined jQuery 时，真实音源加载事件不�
   assert.equal(notifications, 2)
 })
 
-test('简谱打印将不同高度的音符和反复符号归入同一行，下一行括线不会重复进入上一行', () => {
+test('简谱显示与打印将不同高度的音符和反复符号归入同一行，下一行括线不会重复进入上一行', () => {
   const items = [
     { phrase: 'A', box: { top: 100, bottom: 160, height: 60 } },
     { phrase: 'A', box: { top: 110, bottom: 150, height: 40 } },
     { phrase: 'A', box: { top: 174, bottom: 234, height: 60 } },
     { phrase: 'B', box: { top: 174, bottom: 234, height: 60 } }
   ]
-  const rows = groupJianpuPrintRows(items)
+  const rows = groupJianpuRows(items)
   assert.equal(rows.length, 3)
   assert.deepEqual(rows[0].elements, items.slice(0, 2))
   // 下一行括线 y=160，落在上一行预留的 SVG 边界内，必须归属下一行。
-  assert.equal(findJianpuPrintRow(rows, 160), rows[1])
-  assert.equal(findJianpuPrintRow(rows, 94), rows[0])
+  assert.equal(findJianpuRow(rows, 160), rows[1])
+  assert.equal(findJianpuRow(rows, 94), rows[0])
+})
+
+test('简谱行分组以中心位置而非顶部判断，容差边界不合并且不跨乐句', () => {
+  const items = [
+    { phrase: 'A', box: { top: 100, bottom: 160, height: 60 } },
+    { phrase: 'A', box: { top: 111, bottom: 151, height: 40 } },
+    { phrase: 'A', box: { top: 112, bottom: 152, height: 40 } },
+    { phrase: 'B', box: { top: 100, bottom: 160, height: 60 } }
+  ]
+  const rows = groupJianpuRows(items)
+  assert.equal(rows.length, 3)
+  assert.deepEqual(rows[0].elements, items.slice(0, 2))
+  assert.equal(rows[0].top, 100)
+  assert.equal(rows[0].bottom, 160)
+  assert.deepEqual(rows[1].elements, [items[2]])
+  assert.deepEqual(rows[2].elements, [items[3]])
+  assert.deepEqual(groupJianpuRows([]), [])
 })
 
 test('切换音色保留反复内播放 tick 和播放/暂停状态，安装期间不启动音频输出', async () => {

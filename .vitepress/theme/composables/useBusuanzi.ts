@@ -12,6 +12,10 @@ export const useBusuanzi = () => {
     if (typeof window === 'undefined' || !document.getElementById(BUSUANZI_PAGE_PV_ID)) {
       return
     }
+    if (import.meta.env.DEV && import.meta.env.VITE_REFERENCE_ANALYTICS_ENABLED !== 'true') {
+      document.getElementById(BUSUANZI_PAGE_PV_ID)!.textContent = '本地开发已关闭'
+      return
+    }
 
     const currentRequestId = ++requestId
     const pageUrl = window.location.href

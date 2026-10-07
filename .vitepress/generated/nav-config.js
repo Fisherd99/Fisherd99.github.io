@@ -10,20 +10,20 @@ export const navConfig = [
     "text": "物理",
     "items": [
       {
+        "text": "BerkeleyGW+qe运行BSE计算笔记",
+        "link": "/berkeleygw-qe"
+      },
+      {
         "text": "ABACUS+LibRPA运行BSE计算教程",
         "link": "/abacus-librpa-bse-tutorial"
       },
       {
-        "text": "BerkeleyGW+qe运行BSE计算笔记",
-        "link": "/BerkeleyGW+qe"
+        "text": "k空间和R空间的LRI矩阵元",
+        "link": "/k-r-space-lri-tensor"
       },
       {
         "text": "BSE中full情形的对角化流程",
         "link": "/bse-full-diagonalization"
-      },
-      {
-        "text": "k空间和R空间的LRI矩阵元",
-        "link": "/k-r-space-lri-tensor"
       }
     ]
   },
@@ -31,12 +31,12 @@ export const navConfig = [
     "text": "计算机",
     "items": [
       {
-        "text": "gdb笔记",
-        "link": "/gdb"
-      },
-      {
         "text": "服务器备忘录",
         "link": "/server-notes"
+      },
+      {
+        "text": "gdb笔记",
+        "link": "/gdb"
       }
     ]
   },
@@ -66,20 +66,20 @@ export const sidebarConfig = [
     "collapsed": false,
     "items": [
       {
+        "text": "BerkeleyGW+qe运行BSE计算笔记",
+        "link": "/berkeleygw-qe"
+      },
+      {
         "text": "ABACUS+LibRPA运行BSE计算教程",
         "link": "/abacus-librpa-bse-tutorial"
       },
       {
-        "text": "BerkeleyGW+qe运行BSE计算笔记",
-        "link": "/BerkeleyGW+qe"
+        "text": "k空间和R空间的LRI矩阵元",
+        "link": "/k-r-space-lri-tensor"
       },
       {
         "text": "BSE中full情形的对角化流程",
         "link": "/bse-full-diagonalization"
-      },
-      {
-        "text": "k空间和R空间的LRI矩阵元",
-        "link": "/k-r-space-lri-tensor"
       }
     ]
   },
@@ -88,12 +88,12 @@ export const sidebarConfig = [
     "collapsed": false,
     "items": [
       {
-        "text": "gdb笔记",
-        "link": "/gdb"
-      },
-      {
         "text": "服务器备忘录",
         "link": "/server-notes"
+      },
+      {
+        "text": "gdb笔记",
+        "link": "/gdb"
       }
     ]
   },

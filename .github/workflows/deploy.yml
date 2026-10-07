@@ -10,6 +10,8 @@ on:
 
   # 允许你从 Actions 选项卡手动运行此工作流程
   workflow_dispatch:
+  pull_request:
+    branches: [master]
 
 # 设置 GITHUB_TOKEN 的权限，以允许部署到 GitHub Pages
 permissions:
@@ -20,7 +22,7 @@ permissions:
 # 只允许同时进行一次部署，跳过正在运行和最新队列之间的运行队列
 # 但是，不要取消正在进行的运行，因为我们希望允许这些生产部署完成
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -45,6 +47,8 @@ jobs:
         uses: actions/configure-pages@v4
       - name: Install dependencies
         run: npm ci # 或 pnpm install / yarn install / bun install
+      - name: Run regression tests
+        run: npm test
       - name: Build with VitePress
         env:
           PAGEVIEW_API_BASE: https://fisherd-pageview-api.fisherd.workers.dev
@@ -56,6 +60,7 @@ jobs:
 
   # 部署工作
   deploy:
+    if: github.event_name != 'pull_request'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

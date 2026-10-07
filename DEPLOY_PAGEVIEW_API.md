@@ -90,7 +90,7 @@ env:
 
 因此后续 push 到 `master` 的构建会自动注入线上 API。
 
-> `config.mts` 未设置 `PAGEVIEW_API_BASE` 时会默认指向线上 Worker。若要在本地禁用统计，请用空值覆盖：`PAGEVIEW_API_BASE= npm run docs:dev`，此时不注入任何 API meta，页面回退为“获取失败”。
+> 开发模式默认关闭 API 统计和 Cloudflare beacon。生产构建默认启用；本地检查构建时可设置 `PAGEVIEW_API_BASE=` 和 `CLOUDFLARE_ANALYTICS_ENABLED=false`，页面显示“未配置”。测试本地 Worker 时显式设置 `PAGEVIEW_API_BASE=http://localhost:8787`。
 
 ## 7) 健康检查
 

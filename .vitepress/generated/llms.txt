@@ -8,7 +8,7 @@
 
 ## 物理
 
-- [BerkeleyGW+qe运行BSE计算笔记](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/BerkeleyGW+qe.md): 记录自己使用BerkeleyGW+qe运行BSE计算的过程
+- [BerkeleyGW+qe运行BSE计算笔记](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/berkeleygw-qe.md): 记录自己使用BerkeleyGW+qe运行BSE计算的过程
 - [ABACUS+LibRPA运行BSE计算教程](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/abacus-librpa-bse-tutorial.md): 方便新手快速上手
 - [k空间和R空间的LRI矩阵元](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/k-r-space-lri-tensor.md): 关于k空间和R空间的变换关系，以及Local RI在两个表象下的变换关系
 - [BSE中full情形的对角化流程](https://raw.githubusercontent.com/Fisherd99/Fisherd99.github.io/master/md/bse-full-diagonalization.md): BSE计算中超越TDA近似的方法

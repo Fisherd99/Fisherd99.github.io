@@ -3,6 +3,8 @@ import {
   TREND_DAYS,
   HALF_HOUR_MS,
   RECENT_BUCKETS,
+  ARTICLE_PATH_PATTERN,
+  MAX_ARTICLE_PATH_LENGTH,
   normalizeArticlePath,
   PAGEVIEW_TRACK_PATH,
   PAGEVIEW_HISTORY_PATH
@@ -11,10 +13,8 @@ import {
 const DEDUPE_RETENTION_MS = 2 * DAY_MS
 const RATE_WINDOW_MS = 60 * 1000
 const MAX_TRACKS_PER_WINDOW = 30
-const MAX_PATH_LENGTH = 128
 const MAX_BODY_BYTES = 1024
 const MAX_MAP_POINTS = 48
-const ARTICLE_PATH_PATTERN = /^\/(?:[a-z0-9]+(?:-[a-z0-9]+)*(?:\.html)?)?$/
 
 const getAllowedOrigin = (request, env) => {
   const origin = request.headers.get('Origin')
@@ -60,7 +60,7 @@ const normalizePath = (rawPath) => {
   if (!rawPath || typeof rawPath !== 'string') return null
 
   const clean = normalizeArticlePath(rawPath)
-  if (clean.length > MAX_PATH_LENGTH || !ARTICLE_PATH_PATTERN.test(clean)) {
+  if (clean.length > MAX_ARTICLE_PATH_LENGTH || !ARTICLE_PATH_PATTERN.test(clean)) {
     return null
   }
 

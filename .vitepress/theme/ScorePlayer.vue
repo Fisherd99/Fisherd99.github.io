@@ -1,8 +1,7 @@
 <script setup>
 import { useScorePlayer } from './score-player/useScorePlayer.js'
 import { INSTRUMENTS } from './score-player/alphatab.mjs'
-import ScoreSettings from './score-player/ScoreSettings.vue'
-import ScoreTransport from './score-player/ScoreTransport.vue'
+import ScoreUtil from './score-player/ScoreUtil.vue'
 import JianpuView from './score-player/JianpuView.vue'
 import { rawScoreUrl } from '../site-meta.js'
 
@@ -42,7 +41,7 @@ const {
     <div class="score-header">
       <span class="score-title">{{ title }}</span>
       <div class="score-header-right">
-        <ScoreSettings v-model:speed="speed" v-model:program="program" />
+        <ScoreUtil mode="settings" v-model:speed="speed" v-model:program="program" />
 
         <a class="score-action" :href="src" download>下载 MusicXML</a>
         <button class="score-action" type="button" :disabled="!loaded" @click="onPrint">
@@ -52,7 +51,7 @@ const {
     </div>
 
     <div v-if="loaded" ref="toolbar" class="score-toolbar">
-      <ScoreTransport
+      <ScoreUtil
         :is-playing="isPlaying" :position="position" :duration="duration"
         @toggle="togglePlay" @seek-by="seekBy" @seek="onSeek"
       />
@@ -83,12 +82,10 @@ const {
        Teleport 到 body，避免被祖先元素的 transform 影响 fixed 定位。 -->
   <Teleport to="body">
     <div v-if="loaded && !playerInView" class="score-hud">
-      <ScoreTransport
-        floating :is-playing="isPlaying" :position="position" :duration="duration"
+      <ScoreUtil
+        floating v-model:speed="speed" v-model:program="program" :is-playing="isPlaying" :position="position" :duration="duration"
         @toggle="togglePlay" @seek-by="seekBy" @seek="onSeek"
-      >
-        <template #settings><ScoreSettings compact v-model:speed="speed" v-model:program="program" /></template>
-      </ScoreTransport>
+      />
     </div>
   </Teleport>
 </template>

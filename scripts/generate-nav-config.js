@@ -1,19 +1,18 @@
 /**
- * 自动从 md 文件的 frontmatter 生成 nav 和 sidebar 配置
+ * 从统一文章索引生成 nav 和 sidebar 配置
  * 运行方式：node scripts/generate-nav-config.js
  */
 
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { getAllMarkdownFiles, parseFrontmatter } from './content-utils.mjs'
-import { CATEGORY_ORDER, ROOT_CATEGORIES, getCategoryChildren } from '../.vitepress/site-meta.js'
+import { generateArticlesList } from './generate-articles-list.js'
+import { ROOT_CATEGORIES, getCategoryChildren } from '../.vitepress/site-meta.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const projectRoot = path.resolve(__dirname, '..')
 
-const mdDir = path.join(projectRoot, 'md')
 const navOutputFile = path.join(projectRoot, '.vitepress', 'generated', 'nav-config.js')
 const specialPages = [{ text: '主页', link: '/' }]
 
@@ -41,36 +40,17 @@ function buildNavGroup(categoriesMap, title) {
   return items.length ? { text: title, items } : null
 }
 
-function generateNavConfig() {
-  console.log('📂 扫描 markdown 文件...')
+export function generateNavConfig(articles) {
+  console.log('📂 读取校验后的文章索引...')
 
-  const mdFiles = getAllMarkdownFiles(mdDir)
   const categoriesMap = new Map()
-
-  for (const filePath of mdFiles) {
-    const content = fs.readFileSync(filePath, 'utf-8')
-    const frontmatter = parseFrontmatter(content)
-
-    if (!frontmatter || !frontmatter.categories) {
-      continue
-    }
-
-    const category = frontmatter.categories
-    const relativePath = '/' + path.relative(mdDir, filePath).replace(/\.md$/, '')
-    const title = frontmatter.title || path.basename(filePath, '.md')
-
-    if (!categoriesMap.has(category)) {
-      categoriesMap.set(category, [])
-    }
-    categoriesMap.get(category).push({ text: title, link: relativePath })
-    console.log(`  ✓ ${title} (${category})`)
+  for (const article of articles) {
+    if (!categoriesMap.has(article.category)) categoriesMap.set(article.category, [])
+    categoriesMap.get(article.category).push({ text: article.title, link: article.link })
   }
 
   const nav = [...specialPages]
   const sidebar = []
-
-  // 已由 CATEGORIES 声明的分类标题（含子分类），避免兜底分支重复输出。
-  const declared = new Set(CATEGORY_ORDER)
 
   // 先按 CATEGORIES 的树输出，二级分类自然嵌在父分类之下。
   for (const category of ROOT_CATEGORIES) {
@@ -78,13 +58,6 @@ function generateNavConfig() {
     const sidebarGroup = buildSidebarGroup(categoriesMap, category.title)
     if (navGroup) nav.push(navGroup)
     if (sidebarGroup) sidebar.push(sidebarGroup)
-  }
-
-  // 兜底：frontmatter 里出现、但未在 CATEGORIES 声明的分类，按平铺处理。
-  for (const [category, items] of categoriesMap) {
-    if (declared.has(category)) continue
-    nav.push({ text: category, items })
-    sidebar.push({ text: category, collapsed: false, items })
   }
 
   const configContent = `// 自动生成的 nav 和 sidebar 配置
@@ -99,11 +72,13 @@ export const sidebarConfig = ${JSON.stringify(sidebar, null, 2)}
   fs.writeFileSync(navOutputFile, configContent, 'utf-8')
 
   console.log(`\n✅ 已生成导航配置: ${navOutputFile}`)
-  console.log(`📊 共 ${categoriesMap.size} 个分类，${mdFiles.length} 个文件`)
+  console.log(`📊 共 ${articles.length} 个文件，${categoriesMap.size} 个分类`)
   console.log('\n📋 分类统计:')
   for (const [category, items] of categoriesMap) {
     console.log(`  ${category}: ${items.length} 篇`)
   }
 }
 
-generateNavConfig()
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  generateNavConfig(generateArticlesList())
+}

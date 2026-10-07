@@ -29,6 +29,13 @@ const loadMap = () => {
 
   const stage = mapStage.value
   stage.replaceChildren()
+  if (import.meta.env.DEV && import.meta.env.VITE_REFERENCE_ANALYTICS_ENABLED !== 'true') {
+    const disabled = document.createElement('span')
+    disabled.className = 'map-my-visitors-state'
+    disabled.textContent = '本地开发已关闭第三方统计'
+    stage.appendChild(disabled)
+    return
+  }
 
   const colors = props.isDark
     ? { text: 'e5e7eb', ocean: '1e293b', labels: '94a3b8', high: 'c4b5fd', low: '8b5cf6' }

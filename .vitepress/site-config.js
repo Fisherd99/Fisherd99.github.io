@@ -14,6 +14,9 @@ export const PAGEVIEW_TRACK_PATH = '/api/pageview/track'
 export const PAGEVIEW_HISTORY_PATH = '/api/pageview/history'
 export const PAGEVIEW_TRACK_META = 'pageview-track-api'
 
+export const ARTICLE_PATH_PATTERN = /^\/(?:[a-z0-9]+(?:-[a-z0-9]+)*)?$/
+export const MAX_ARTICLE_PATH_LENGTH = 128
+
 // 将任意文章 URL 归一到无 `.html` 后缀的规范化路径（站点与 Worker 同源）。
 // 仅做规范化，不做合法性校验；非法路径的判定由 Worker 侧另行处理。
 export const normalizeArticlePath = (rawPath) => {

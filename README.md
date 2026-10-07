@@ -29,6 +29,12 @@ Created by [VitePress](https://vitepress.dev/zh/)
 | `npm run docs:build` | Build for production |
 | `npm run generate-nav` | Generate Navigation |
 | `npm run generate-articles` | Generate Articles List for home page |
+| `npm run generate-content` | Validate articles and generate all content indexes |
+| `npm test` | Run content, analytics and score regression tests |
+
+本地开发默认关闭 Cloudflare、Busuanzi 和 MapMyVisitors 统计。测试本地 Worker 时设置
+`PAGEVIEW_API_BASE=http://localhost:8787`；第三方参考计数仅在显式设置
+`VITE_REFERENCE_ANALYTICS_ENABLED=true` 时启用。生产构建默认保留线上统计。
 
 See [AGENTS.md](./AGENTS.md) for detailed documentation on adding articles and managing content.
 

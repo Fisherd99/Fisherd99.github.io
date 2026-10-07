@@ -1,11 +1,12 @@
 /**
  * 生成 llms.txt（规范见 https://llmstxt.org/），列出各页面的原始 Markdown 地址，
  * 便于 LLM / 爬虫直接获取纯文本内容，而无需解析前端渲染后的 HTML。
- * 依赖 .vitepress/generated/articles.json（由 generate-articles-list.js 生成）。
+ * 使用 generate-articles-list.js 返回的统一文章索引。
  * 生成结果由 config.mts 中的 Vite 插件输出到站点根 /llms.txt。
  * 运行方式：node scripts/generate-llms-txt.js
  */
 
+import { generateArticlesList } from './generate-articles-list.js'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -15,11 +16,9 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const projectRoot = path.resolve(__dirname, '..')
 
-const articlesFile = path.join(projectRoot, '.vitepress', 'generated', 'articles.json')
 const outputFile = path.join(projectRoot, '.vitepress', 'generated', 'llms.txt')
 
-function generateLlmsTxt() {
-  const articles = JSON.parse(fs.readFileSync(articlesFile, 'utf-8'))
+export function generateLlmsTxt(articles) {
 
   const groups = new Map()
   for (const article of articles) {
@@ -60,4 +59,6 @@ function generateLlmsTxt() {
   console.log(`📊 共 ${articles.length} 篇文章，${orderedCategories.length} 个分类`)
 }
 
-generateLlmsTxt()
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  generateLlmsTxt(generateArticlesList())
+}

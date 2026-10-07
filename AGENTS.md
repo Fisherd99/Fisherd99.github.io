@@ -1,147 +1,134 @@
 # VitePress Blog Guide
 
-## Project
+## Project and architecture
 
-- Personal zh-CN VitePress blog deployed to GitHub Pages from `master`.
-- Markdown sources are in `md/`; article filenames should use English kebab-case.
-- Navigation and the homepage article list are generated from frontmatter.
-- The project uses ES modules and Node.js 22 in CI.
+Personal zh-CN VitePress blog. The project uses ES modules and Node.js 22 in CI.
+GitHub Pages publishes the site; Cloudflare Worker + D1 supplies page-view statistics.
 
-## Code Architecture
-
-```
+```text
 vitepress/
-├── .github/
-│   └── workflows/                # GitHub Pages deployment
+├── .github/workflows/deploy.yml  # Tests, build and GitHub Pages deployment
 ├── .vitepress/
-│   ├── config.mts                # Site config (publicDir=../public; source links; llms.txt emit)
-│   ├── site-meta.js              # Site-only shared constants (title, categories, raw-MD URLs)
-│   ├── site-config.js            # Cross-boundary constants shared with the Worker (analytics)
-│   ├── generated/                # Auto-generated build inputs (DO NOT EDIT)
-│   │   ├── articles.json         # Homepage article metadata
-│   │   ├── llms.txt              # LLM index of raw Markdown URLs (published to /llms.txt)
-│   │   ├── soundfont-hashes.mjs   # Generated SHA-256 manifest for bundled soundfonts
-│   │   └── nav-config.js         # Navigation and sidebar config
-│   ├── theme/                    # Custom layout and styles
-│   │   ├── composables/          # Browser integrations (zoom, code lines, busuanzi, stats, title meta)
-│   │   ├── custom.css            # Global theme styles
-│   │   ├── BilibiliPlayer.vue    # Lazy-loaded Bilibili embed
-│   │   ├── ScorePlayer.vue       # Music score page composition
-│   │   ├── score-player/         # Playback adapter, lifecycle, shared controls, jianpu/print rendering
-│   │   │   ├── alphatab.mjs      # Public alphaTab integration and instrument catalog
-│   │   │   ├── useScorePlayer.js # Vue player state, lazy initialization and teardown
-│   │   │   └── soundfonts.mjs    # SHA-256 checks, shared downloads, per-player installations
-│   │   ├── HomeArticlesAuto.vue  # Homepage article list
-│   │   ├── LazyGiscus.vue        # Lazy-loaded comments
-│   │   ├── PageViewTrend.vue     # 60-day page-view chart
-│   │   ├── CloudflareVisitorMap.vue # Cloudflare geolocation visitor map
-│   │   ├── world-map-geo.js      # Simplified Natural Earth lon/lat geometry
-│   │   ├── world-map-data.NOTICE.md # Map data source and license
-│   │   ├── index.ts              # Theme entry (thin composition root)
-│   │   └── MyLayout.vue          # Layout and analytics UI
-│   ├── cache/                    # VitePress build cache
-│   └── dist/                     # Built site output
-├── md/                           # Markdown articles + homepage
-├── public/                       # Static assets published at the site root
-│   ├── alphatab/                 # Bravura, soundfonts and upstream notices
-│   └── scores/                   # Sources and generated playback assets
-│       ├── <slug>/
-│       │   ├── score.txt         # Hand-authored jianpu source
-│       │   ├── score.musicxml    # Generated score for playback/download
-│       │   └── score.json        # Generated jianpu layout
-│       └── README.md             # Notation syntax reference
-├── package.json                  # Dependencies and scripts
+│   ├── config.mts                # Site config, KaTeX, raw source links and runtime plugins
+│   ├── site-meta.js              # Site title, categories, source URL helpers and Busuanzi constants
+│   ├── site-config.js            # Shared analytics contract, time windows and path rules
+│   ├── analytics-config.mjs      # Environment defaults and overrides
+│   ├── generated/                # Generated build inputs; do not edit
+│   │   ├── articles.json         # Validated article index
+│   │   ├── nav-config.js         # Navigation and sidebar
+│   │   ├── llms.txt              # Raw Markdown index
+│   │   └── soundfont-hashes.mjs  # Soundfont SHA-256 manifest
+│   └──  theme/
+│       ├── index.ts              # Thin theme entry
+│       ├── MyLayout.vue          # Page composition
+│       ├── custom.css            # Global styles
+│       ├── composables/          # Browser integrations (zoom, code lines, busuanzi, Cloudflare, title meta)
+│       ├── HomeArticlesAuto.vue  # Homepage article list
+│       ├── PageViewDashboard.vue # Statistics composition
+│       ├── PageViewTrend.vue     # Trend chart
+│       ├── CloudflareVisitorMap.vue
+│       ├── world-map-geo.js      # Natural Earth geometry
+│       ├── world-map-data.NOTICE.md # Geometry source and license
+│       ├── MapMyVisitors.vue     # Third-party reference map
+│       ├── LazyGiscus.vue        # Lazy-loaded comments
+│       ├── BilibiliPlayer.vue    # Lazy-loaded video embed
+│       ├── ScorePlayer.vue       # Thin score composition
+│       └── score-player/
+│           ├── alphatab.mjs      # Playback adapter and instrument catalog
+│           ├── useScorePlayer.js # Vue state and lifecycle
+│           ├── soundfonts.mjs    # Downloads, verification and installation
+│           ├── ScoreUtil.vue      # Playback controls, progress, speed and instruments
+│           └── JianpuView.vue    # Rendering, shared row grouping and printing
+├── md/                           # Homepage and articles
+├── public/
+│   ├── alphatab/                 # Fonts, soundfonts and upstream notices
+│   └── scores/
+│       ├── README.md             # Notation syntax
+│       └── <slug>/
+│           ├── score.txt         # Authored jianpu notation
+│           ├── score.musicxml    # Generated playback/download score
+│           └── score.json        # Generated jianpu layout
 ├── scripts/
-│   ├── content-utils.mjs         # Shared frontmatter/file helpers
-│   ├── generate-articles-list.js # Generate homepage article metadata
-│   ├── generate-llms-txt.js      # Generate llms.txt raw-Markdown index
-│   ├── generate-nav-config.js    # Generate navigation and sidebar config
-│   ├── generate-scores.js        # jianpu → MusicXML, with --verify round-trip check
-│   ├── score-utils.mjs           # Jianpu parsing / measure validation / MusicXML emit
+│   ├── content-utils.mjs         # YAML and file helpers
+│   ├── generate-content.mjs      # Orchestrate all generated inputs
+│   ├── generate-*.js             # Article index, navigation, llms.txt, scores and soundfont hashes
+│   ├── score-utils.mjs           # Jianpu parsing, measure validation and MusicXML/display models
 │   ├── prepare-score-soundfonts.mjs # Extract instrument presets from upstream soundfonts
-│   ├── generate-soundfont-hashes.mjs # Hash menu soundfonts for runtime verification
-│   ├── score-player.test.mjs     # Playback, notation and real audio regression tests
-│   └── score-soundfonts.test.mjs # Shared cache and installation lifecycle tests
+│   ├── patch-alphatab.mjs        # Version-checked AudioWorklet lifecycle fix (postinstall)
+│   ├── content.test.mjs
+│   ├── analytics.test.mjs
+│   ├── score-player.test.mjs
+│   ├── score-worklet.test.mjs
+│   └── score-soundfonts.test.mjs
 ├── cloudflare/
 │   ├── pageview-worker.js        # Page views, anti-abuse, history, visitor locations
 │   ├── schema.sql                # D1 counters, buckets, dedupe, rate limits, locations
 │   └── wrangler.toml             # Worker bindings, observability, and Cron trigger
+├── package.json                  # Dependencies and commands
+├── DEPLOY_PAGEVIEW_API.md         # Worker deployment guide
 ├── UPDATE_LOG.md                 # Unified update changelog
 └── AGENTS.md                     # File for AI Agents.
 ```
 
-Do not edit generated files directly:
+Keep shared values in their existing modules. `site-meta.js` and `site-config.js`
+are browser-safe and dependency-free: no Node built-ins or framework imports.
+Static assets belong in project-root `public/`, not `md/public/`; reference them
+with root-relative URLs such as `/images/example.webp`.
 
-- `.vitepress/generated/soundfont-hashes.mjs`
-- `public/scores/*/score.musicxml` and `public/scores/*/score.json`
-- `.vitepress/generated/nav-config.js`
-- `.vitepress/generated/articles.json`
-- `.vitepress/generated/llms.txt`
-- `.vitepress/dist/` and `.vitepress/cache/`
+### Generated files
 
-Static assets live in the project-root `public/` (published at the site root), not
-`md/public/`. VitePress defaults `publicDir` to `<srcDir>/public`, so `config.mts`
-overrides it via `vite.publicDir`; reference assets with absolute URLs (`/images/...`).
+Edit sources and run the relevant generator; never hand-edit these outputs:
 
-Two dependency-free modules hold cross-cutting constants; import from them instead
-of re-declaring values:
+| Output | Source / generator |
+| --- | --- |
+| `.vitepress/generated/articles.json` | `md/` → `generate-articles-list.js` |
+| `.vitepress/generated/nav-config.js`, `llms.txt` | Validated article index → navigation / llms generators |
+| `.vitepress/generated/soundfont-hashes.mjs` | Bundled soundfonts → `generate-scores.js` |
+| `public/scores/*/score.musicxml`, `score.json` | `score.txt` → `generate-scores.js` |
+| `.vitepress/dist/`, `.vitepress/cache/` | VitePress build output and cache |
 
-- `.vitepress/site-meta.js` (site-only, browser-safe — no `fs`/`path`, since the
-  theme bundles it): `SITE_TITLE`, `SITE_DESCRIPTION`, the `CATEGORIES` model
-  (title/id/icon/color) with its derived `CATEGORY_ORDER`, the Busuanzi constants,
-  and the raw-Markdown helpers `SOURCE_REPO_BASE` / `rawMarkdownUrl()`.
-- `.vitepress/site-config.js` (shared with the Worker — see Analytics invariants):
-  the analytics window, the pageview API contract, and `normalizeArticlePath()`.
+## Commands and environments
 
-### Markdown source access for LLMs
+| Command | Purpose |
+| --- | --- |
+| `npm install` / `npm ci` | Install dependencies / reproduce the lockfile (CI) |
+| `npm run docs:dev` | Generate inputs and start development server |
+| `npm run docs:build` | Generate inputs, verify scores and build; does not run tests |
+| `npm run docs:preview` | Preview built site; use dev or a plain static server for playback checks |
+| `npm run generate-content` | Generate soundfont hashes, scores, articles, navigation and llms.txt; scan Markdown once |
+| `npm run generate-articles` | Regenerate article index |
+| `npm run generate-nav` / `npm run generate-llms` | Refresh article index, then generate the selected output |
+| `npm run generate-scores` | Generate soundfont hashes, MusicXML and jianpu layout |
+| `node scripts/generate-scores.js --verify` | Generate and verify score round trips |
+| `npm test` | Run site and score regression suites |
+| `npm run test:site` / `npm run test:scores` | Run content/analytics lifecycle tests / playback, notation and soundfont tests |
+| `npm run cf:pageview:dev` | Start local Worker |
+| `npm run cf:pageview:d1:create` / `npm run cf:pageview:d1:info` | Create / inspect D1 database |
+| `npm run cf:pageview:d1:migrate:local` / `npm run cf:pageview:d1:migrate` | Apply schema locally / remotely |
+| `npm run cf:pageview:deploy` | Deploy Worker separately from the site |
 
-- `rawMarkdownUrl()` builds the raw `.md` URL; `config.mts` injects a per-page
-  `<link rel="alternate" type="text/markdown">` in `transformPageData`, and the theme
-  renders a "跳转源文件" link beside the last-updated line — both point at the raw
-  file, not the GitHub HTML view.
-- `scripts/generate-llms-txt.js` derives `.vitepress/generated/llms.txt`
-  (llmstxt.org format) from `articles.json`; the `vitepress:llms-txt` Vite plugin in
-  `config.mts` publishes it to `/llms.txt` (build asset + dev middleware).
+`generate-content` only generates inputs and does not forward verification options.
+`docs:build` runs `generate-scores.js --verify` separately before automatic generation.
 
-## Commands
+### Statistics during local work
 
-```bash
-npm install
-npm run docs:dev
-npm run docs:build
-npm run docs:preview
-npm run generate-nav
-npm run generate-articles
-npm run generate-llms
-npm run generate-scores
-npm run generate-soundfont-hashes
-npm run test:scores
-npm run cf:pageview:dev
-npm run cf:pageview:d1:migrate:local
-npm run cf:pageview:d1:migrate
-npm run cf:pageview:deploy
-```
+Local work must not affect production statistics. Prefer `docs:dev` for browser checks.
 
-Local development must not affect production statistics. `npm run docs:dev`
-defaults `PAGEVIEW_API_BASE` to the production Cloudflare Worker, so every page
-opened locally is counted in the production D1 database. Disable tracking for
-local runs:
+| Setting | Development default | Production-build default |
+| --- | --- | --- |
+| `PAGEVIEW_API_BASE` | No API tracking | Production Worker URL |
+| `CLOUDFLARE_ANALYTICS_ENABLED` | Beacon disabled | Beacon enabled |
+| `VITE_REFERENCE_ANALYTICS_ENABLED` | Busuanzi/MapMyVisitors disabled unless `true` | Reference counters enabled; this override only applies in dev |
 
-```bash
-PAGEVIEW_API_BASE= npm run docs:dev
-```
+Set `PAGEVIEW_API_BASE=http://localhost:8787` to exercise a local Worker.
+Explicitly setting the API base to an empty string disables API tracking;
+`CLOUDFLARE_ANALYTICS_ENABLED=false` independently disables the beacon.
+These two settings do not disable reference counters in a production build.
 
-## Regression Test
+## Content and source discovery
 
-Run `npm run test:scores` after score playback/parser changes or alphaTab/soundfont upgrades.
-If score sources or generators changed, run `node scripts/generate-scores.js --verify` first; never hand-edit generated assets.
-For substantive bug fixes, add behavior-focused regression coverage; resolve failures without weakening assertions merely to pass.
-Run `npm run docs:build` separately (it does not run these tests); verify affected audio, scrolling, and controls in the browser with production tracking disabled.
-Unrelated article/style edits need no score tests; exercise Worker endpoints when analytics changes.
-
-## Markdown Content
-
-Articles belong in `md/` and require frontmatter like:
+Articles belong directly in `md/`. Standard YAML frontmatter supports comments,
+inline arrays and multiline strings. Use the following authoring convention:
 
 ```yaml
 ---
@@ -150,73 +137,105 @@ lang: zh-CN
 date: YYYY-MM-DD
 author: Fisherd
 categories: 物理 # 物理 / 计算机 / 生活 / 音乐
-tags:
-  - tag
+tags: [tag]
 description: Article description
 ---
 ```
 
-- Missing frontmatter or `categories` excludes an article from generated lists.
-- Prefer optimized WebP previews, retain the original via `data-zoom-src`, and
-specify dimensions and lazy loading on raw `<img>` elements.
-- KaTeX renders mathematics at build time.
+- `content-utils.mjs` parses YAML; `generate-articles-list.js` validates metadata and
+  paths, then sorts articles by descending date with a deterministic path tie-break.
+- Files without frontmatter or a nonempty category are excluded from the index;
+  `index.md` is reserved for the homepage. Unknown categories, invalid tag types,
+  dates or paths fail generation with the source filename. Titles and descriptions
+  must be strings when supplied; missing values have generator defaults.
+- Declare categories in `site-meta.js`: music is a child of life. Group through
+  categories/navigation rather than URL folders. Homepage, navigation and llms.txt
+  share the same validated article index; the homepage reads `articles.json`.
+- Prefer WebP previews with `data-zoom-src` for originals. Give raw `<img>`
+  elements dimensions and lazy loading. KaTeX renders mathematics at build time.
+- `rawMarkdownUrl()` powers per-page Markdown alternate links and the theme's
+  “跳转源文件” link. The llms generator lists raw Markdown URLs; the config plugin
+  serves/publishes the index at `/llms.txt`.
 
-### Article paths must stay single-segment
+### Article paths
 
-`cloudflare/pageview-worker.js` only accepts single-segment lowercase kebab paths
-(`ARTICLE_PATH_PATTERN`). An article at `/music/foo` returns `400 invalid_path`
-and that page's analytics silently stop working. Keep landing pages at the top
-level (`/tabi-no-tochu`); express grouping through `categories` and the nav, not
-through the URL.
+Use a single lowercase kebab-case segment, for example `/berkeleygw-qe`.
+`ARTICLE_PATH_PATTERN` permits ASCII letters, digits and single separating
+hyphens, plus `/` for the homepage. Nested paths such as `/music/foo` are invalid.
+Content generation rejects invalid article paths; Worker requests return
+`400 invalid_path`.
 
-### Music section
+The kebab-case rule and 128-character normalized-path limit
+(`MAX_ARTICLE_PATH_LENGTH`, including the leading `/`) are project-defined,
+not Cloudflare or VitePress requirements. They live in `site-config.js` and are
+shared by content validation and the Worker; the length limit predates this sharing.
 
-- Edit only `public/scores/<slug>/score.txt`; syntax is in `public/scores/README.md`. Generate `score.musicxml`/`score.json` in the same folder; do not hand-edit outputs. Build verifies beat counts, pitches, programs and repeats without auto-padding.
-- Keep `ScorePlayer.vue` thin: `useScorePlayer.js` owns lifecycle/state; `alphatab.mjs` owns integration; shared transport/settings and jianpu/print components own their views.
-- Resources load near the viewport. `soundfonts.mjs` verifies SHA-256 before sharing download bytes across routes, evicts failures, and serializes per-player installations until acknowledgement; never abort shared downloads on unmount.
-- Rebuild instrument subsets with `prepare-score-soundfonts.mjs <upstream.sf2/sf3>`, then run `npm run generate-soundfont-hashes` (also in dev/build). Preserve samples/licenses; never load full Sonivox alongside MS Basic.
-- Change programs AND Instrument automations, then issue ordered MIDI load → seek → optional play; retain expanded playback position and intent across Worker notifications. Avoid timer-based restoration.
-- Use public `customScrollHandler`/`stopScrolling` for follow mode; index public `tickCache` on `midiLoad`. Avoid private internals and the recursive `midiLoaded` getter in alphaTab 1.8.4.
-- Keep both alphaTab build/dev Worker plugins and the invalid-jQuery guard. Check playback on dev or a plain static server, rather than `docs:preview`.
+## Music playback
+
+- Author only `public/scores/<slug>/score.txt`; notation syntax is in
+  `public/scores/README.md`. Generation checks measure beats; round-trip
+  verification checks pitches, programs and repeats without auto-padding.
+- Keep `ScorePlayer.vue` thin. `useScorePlayer.js` owns state/lifecycle,
+  `alphatab.mjs` owns integration, and dedicated components own controls,
+  jianpu rendering and printing. Keep screen/print row grouping unified in
+  `JianpuView.vue`. Load resources near the viewport.
+- `soundfonts.mjs` verifies SHA-256, shares downloads across routes, evicts
+  failed data and serializes per-player installations in request order until
+  acknowledgement. Unmount must not abort shared downloads.
+- Prepare instrument subsets with
+  `node scripts/prepare-score-soundfonts.mjs <upstream.sf2/sf3>`, then regenerate
+  hashes. Preserve samples and licenses; do not load full Sonivox alongside MS Basic.
+- Instrument changes update both programs and Instrument automations. Pause once,
+  retain playback position/intent across rapid selections and Worker notifications,
+  then serialize MIDI load → seek → optional play for the final selection,
+  awaiting public player acknowledgements; cancel waits on unmount.
+  Do not restore playback with timers.
+- alphaTab 1.8.4 uses main-thread score rendering, Worker synthesis and AudioWorklet
+  output. `patch-alphatab.mjs` applies a version/source-checked lifecycle fix on
+  postinstall; review or remove it on upgrades. Preserve build/dev runtime plugins
+  and the invalid-jQuery guard until an upgrade is verified.
+- Use public `customScrollHandler`/`stopScrolling` for follow mode and index
+  public `tickCache` on `midiLoad`. Avoid private internals; the dependency patch
+  also repairs 1.8.4's recursive MIDI getter needed for acknowledgement subscriptions.
 
 ## Analytics invariants
 
-- Cloudflare Worker + D1 is the authoritative page-view source. Counters are
-  atomic, keyed by normalized article path, and protected by deduplication and
-  rate limiting.
-- The analytics window (`TREND_DAYS`, `RECENT_BUCKETS`, half-hour buckets), the
-  pageview API contract (`PAGEVIEW_*_PATH`, the `pageview-track-api` meta name),
-  and `normalizeArticlePath()` live in `.vitepress/site-config.js`, imported by both
-  the site and `cloudflare/pageview-worker.js`; change them in one place only.
-- Article URLs and new page-view writes use extensionless paths (for example,
-  `/gdb`). `.html` requests normalize to that same key for compatibility, and
-  history reads include previously stored `.html` rows.
-- One page-load POST returns the total, recent reads, trend points, and global
-  visitor locations. Keep this single-roundtrip design.
-- Visitor geography comes from `request.cf`; coordinates are rounded before D1
-  storage. Raw IPs are excluded from D1 and client responses; a structured
-  Workers Log records the IP only when a page view is counted. Cloudflare Logs
-  retention is short (3 days on Free, 7 days on Paid); restrict dashboard access.
-- The Cloudflare map uses local Natural Earth longitude/latitude geometry and
-  projects it directly in `CloudflareVisitorMap.vue` with the equirectangular
-  formula. Land outlines and `request.cf` coordinates share the antimeridian
-  seam and the -90° to 90° latitude range. Cloudflare city coordinates are
-  approximate and can fall just offshore, especially after coordinate
-  rounding; do not shift a point to land because that would misrepresent it.
-  MapMyVisitors remains an optional third-party reference map loaded separately.
-- Cloudflare Web Analytics is a separate private dashboard source. Do not
-  backfill or merge its historical country data into the D1 visitor map.
-- Busuanzi is retained only as a clearly labeled third-party reference count.
-  It uses the official v3 API (`cdn.busuanzi.cc/api.php`) and the
-  `busuanzi_page_pv` element; its counts are separate from Cloudflare's.
-- Preserve existing D1 totals during schema changes. Apply `schema.sql` before
-  deploying Worker code that depends on new tables or columns.
-- Production errors must not expose internal details. Logs and traces remain
-  enabled through `wrangler.toml`.
+- Worker + D1 is authoritative. Normalize extensionless keys before writes;
+  `.html` requests normalize to the same key and history includes pre-existing
+  `.html` rows. Keep atomic counter updates, deduplication and rate limiting.
+- Share API paths/meta names and time windows through `site-config.js`:
+  60-day trends, half-hour buckets and 48 buckets for recent reads.
+  One tracking POST returns totals, recent reads, trend points and global locations.
+- `useCloudflareStats.ts` delegates timeout/cancellation to
+  `request-lifecycle.mjs`: 10-second timeout across fetch/body parsing, abort on
+  navigation/unmount and discard stale results. Cancellation cannot undo a POST
+  already counted by the Worker.
+- Geography comes from `request.cf`; round coordinates before D1 storage.
+  Do not store raw IPs in D1 or return them to clients. Counted visits log the IP
+  in structured Workers Logs; restrict access and account for log retention.
+- `CloudflareVisitorMap.vue` projects local Natural Earth longitude/latitude
+  geometry (`world-map-geo.js`, license in `world-map-data.NOTICE.md`) using an
+  equirectangular projection, antimeridian seam and −90° to 90° latitude range.
+  Approximate city points may lie offshore; never move them onto land.
+- Cloudflare Web Analytics is a separate private dashboard; do not merge its
+  country history into D1. Busuanzi v3 (`cdn.busuanzi.cc/api.php`,
+  `busuanzi_page_pv`) and MapMyVisitors are separately labeled reference sources.
+- Preserve D1 totals during schema changes; apply `schema.sql` before deploying
+  code dependent on new tables/columns. Do not expose internal errors to clients.
+  Keep logs, traces and scheduled cleanup configured in `wrangler.toml`.
 
-## Maintenance
+## Verification and delivery
 
-- Update `UPDATE_LOG.md` for user-visible features, architecture changes, or
-  deployment changes.
-- GitHub Actions deploys pushes to `master`; local edits are not live until the
-  site is committed and pushed. Cloudflare Worker deployment is separate.
+- Run `test:site` for content generation, path rules, analytics configuration or
+  request-lifecycle changes; exercise local Worker endpoints for analytics changes.
+- Run `test:scores` for playback/parser changes or alphaTab/soundfont upgrades.
+  If score sources/generators changed, run `generate-scores.js --verify` first.
+- Add behavior-focused regression coverage for substantive fixes; do not weaken
+  assertions to pass. Unrelated article/style edits need no score tests.
+- Run `docs:build` separately from tests. Check affected audio, scrolling and
+  controls in the browser with production tracking disabled.
+- CI runs `npm ci`, `npm test` and the build for master pushes, PRs targeting
+  master and manual runs. PRs do not deploy; master pushes/manual runs publish
+  Pages after checks pass. Local commits alone do not publish the site.
+- Update `UPDATE_LOG.md` for user-visible features, architecture or deployment
+  changes. Worker deployment is separate; see `DEPLOY_PAGEVIEW_API.md`.

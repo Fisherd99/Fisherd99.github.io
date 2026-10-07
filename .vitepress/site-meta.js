@@ -32,7 +32,7 @@ export const rawScoreUrl = (src) => {
   return new URL(`../public/scores/${encodeURIComponent(slug)}/score.txt`, SOURCE_REPO_BASE).href
 }
 
-// 由站点相对路径（如 "/BerkeleyGW+qe"）解析出对应原始 Markdown 的绝对地址。
+// 由站点相对路径（如 "/berkeleygw-qe"）解析出对应原始 Markdown 的绝对地址。
 export const rawMarkdownUrl = (link) => {
   const relative = `${link.replace(/^\//, '').replace(/\.md$/, '')}.md`
   return `${SOURCE_REPO_BASE}${encodeURI(relative)}`

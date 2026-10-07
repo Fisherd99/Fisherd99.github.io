@@ -1,15 +1,42 @@
 <script setup>
 import { computed } from 'vue'
-import { formatTime } from './alphatab.mjs'
+import { formatTime, INSTRUMENTS } from './alphatab.mjs'
+
 const props = defineProps({
-  isPlaying: Boolean, position: Number, duration: Number, floating: Boolean
+  mode: { type: String, default: 'transport' },
+  isPlaying: Boolean, position: Number, duration: Number, floating: Boolean,
+  speed: Number, program: Number, compact: Boolean
 })
-const emit = defineEmits(['toggle', 'seek-by', 'seek'])
+const emit = defineEmits(['toggle', 'seek-by', 'seek', 'update:speed', 'update:program'])
 const progressPercent = computed(() => props.duration ? Math.min(100, props.position / props.duration * 100) : 0)
+const speedModel = computed({ get: () => props.speed, set: value => emit('update:speed', value) })
+const programModel = computed({ get: () => props.program, set: value => emit('update:program', value) })
+const speeds = [0.5, 0.75, 1, 1.25, 1.5]
 </script>
 
 <template>
-  <div class="score-transport" :class="{ 'is-floating': floating }">
+  <div v-if="mode === 'settings'" class="score-settings" :class="{ 'is-compact': compact }">
+    <label class="score-field">
+      <span v-if="!compact">速度</span>
+      <span class="score-select">
+        <select v-model.number="speedModel" aria-label="速度" title="速度">
+          <option v-for="value in speeds" :key="value" :value="value">{{ value === 1 ? '1.0' : value }}×</option>
+        </select>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
+      </span>
+    </label>
+    <label class="score-field">
+      <span v-if="!compact">音色</span>
+      <span class="score-select">
+        <select v-model.number="programModel" aria-label="音色" title="音色">
+          <option v-for="item in INSTRUMENTS" :key="item.program" :value="item.program">{{ item.name }}</option>
+        </select>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
+      </span>
+    </label>
+  </div>
+
+  <div v-else class="score-transport" :class="{ 'is-floating': floating }">
     <div class="score-transport-row">
       <div class="score-hud-buttons">
         <button class="score-hud-btn" type="button" title="后退 5 秒" aria-label="后退 5 秒" @click="emit('seek-by', -5000)">
@@ -42,7 +69,7 @@ const progressPercent = computed(() => props.duration ? Math.min(100, props.posi
         </button>
       </div>
 
-      <slot v-if="floating" name="settings" />
+      <ScoreUtil v-if="floating" mode="settings" compact v-model:speed="speedModel" v-model:program="programModel" />
       <p class="score-hud-time">
         <span>{{ formatTime(position) }}</span>
         <span class="score-hud-sep">/</span>
@@ -236,4 +263,19 @@ const progressPercent = computed(() => props.duration ? Math.min(100, props.posi
 @media (max-width: 640px) {
   .score-transport:not(.is-floating) { flex-wrap: wrap; }
 }
+
+.score-settings { display: flex; align-items: center; gap: var(--spacing-sm); }
+.score-field { display: flex; align-items: center; gap: 4px; color: var(--c-text-secondary); font-size: 0.75rem; white-space: nowrap; }
+.score-select { position: relative; display: inline-flex; }
+.score-select select {
+  appearance: none;
+  padding: 2px 22px 2px 4px;
+  color: var(--c-text-primary);
+  background: var(--c-bg-soft);
+  border: 1px solid var(--c-border-light);
+  border-radius: var(--radius-sm);
+}
+.score-select svg { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.5; pointer-events: none; }
+.is-compact { gap: 4px; }
+.is-compact select { height: 30px; }
 </style>
