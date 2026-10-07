@@ -5,6 +5,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "postinstall": "node scripts/patch-alphatab.mjs",
     "docs:dev": "node scripts/generate-soundfont-hashes.mjs && node scripts/generate-scores.js && node scripts/generate-articles-list.js && node scripts/generate-llms-txt.js && node scripts/generate-nav-config.js && vitepress dev",
     "docs:build": "node scripts/generate-soundfont-hashes.mjs && node scripts/generate-scores.js --verify && node scripts/generate-articles-list.js && node scripts/generate-llms-txt.js && node scripts/generate-nav-config.js && vitepress build",
     "docs:preview": "vitepress preview",
@@ -19,7 +20,7 @@
     "cf:pageview:d1:migrate": "wrangler d1 execute DB --remote --config cloudflare/wrangler.toml --file cloudflare/schema.sql",
     "cf:pageview:d1:migrate:local": "wrangler d1 execute DB --local --config cloudflare/wrangler.toml --file cloudflare/schema.sql",
     "generate-soundfont-hashes": "node scripts/generate-soundfont-hashes.mjs",
-    "test:scores": "node --test scripts/score-player.test.mjs scripts/score-soundfonts.test.mjs"
+    "test:scores": "node scripts/patch-alphatab.mjs && node --test scripts/score-player.test.mjs scripts/score-soundfonts.test.mjs scripts/score-worklet.test.mjs"
   },
   "keywords": [],
   "author": "",

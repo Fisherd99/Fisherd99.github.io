@@ -101,6 +101,37 @@ test('音源安装串行确认成功，解析失败清除共享数据并重新�
   loader.dispose()
 })
 
+test('慢下载保留安装顺序，切回已缓存音色也等待全部安装完成', async () => {
+  const api = fontLoaderFixture()
+  let finishDownload
+  const slow = new Promise(resolve => { finishDownload = resolve })
+  const loader = createSoundFontLoader(api, url => url === '/slow' ? slow : Promise.resolve(new ArrayBuffer(3)))
+  const base = loader.ensure('/base')
+  await nextTask()
+  api.soundFontLoaded.trigger()
+  await base
+
+  const first = loader.ensure('/slow')
+  const second = loader.ensure('/fast')
+  let cachedReady = false
+  const cached = loader.ensure('/base').then(() => { cachedReady = true })
+  await nextTask()
+  assert.equal(api.loads.length, 1)
+  assert.equal(cachedReady, false)
+  finishDownload(new ArrayBuffer(3))
+  await nextTask()
+  assert.equal(api.loads.length, 2)
+  api.soundFontLoaded.trigger()
+  await first
+  await nextTask()
+  assert.equal(api.loads.length, 3)
+  assert.equal(cachedReady, false)
+  api.soundFontLoaded.trigger()
+  await Promise.all([second, cached])
+  assert.equal(cachedReady, true)
+  loader.dispose()
+})
+
 test('卸载播放器取消安装并移除订阅，不影响下一页面复用共享下载', async () => {
   let calls = 0
   const cache = createSoundFontCache(async () => {

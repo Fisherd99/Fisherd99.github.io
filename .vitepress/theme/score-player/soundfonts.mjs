@@ -86,12 +86,17 @@ export function createSoundFontLoader(api, download = getSoundFont, beforeLoad =
     // Even cached selections must wait for an in-flight installation to finish pausing/restoring.
     if (installed.has(url)) return queue.then(() => {})
     if (pending.has(url)) return pending.get(url)
-    const operation = (async () => {
-      const data = await download(url)
-      const install = queue.then(() => installFont(url, data))
-      queue = install.catch(() => {})
-      await install
-    })().finally(() => { pending.delete(url) })
+    // Reserve the queue before downloading: an earlier slow request must not install
+    // after a later cached selection has already resumed playback.
+    const data = download(url)
+    // Observe rejection immediately, even while a previous installation occupies the queue.
+    const result = data.then(bytes => ({ bytes }), error => ({ error }))
+    const operation = queue.then(async () => {
+      const loaded = await result
+      if ('error' in loaded) throw loaded.error
+      await installFont(url, loaded.bytes)
+    }).finally(() => { pending.delete(url) })
+    queue = operation.catch(() => {})
     pending.set(url, operation)
     return operation
   }

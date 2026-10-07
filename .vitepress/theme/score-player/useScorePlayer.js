@@ -40,8 +40,11 @@ export function useScorePlayer(props) {
   let jqTimer
   let disposed = false
   const layoutAbort = new AbortController()
+  const playbackAbort = new AbortController()
   let soundFonts
   let instrumentRequest = 0
+  let instrumentPlayback = null
+  let instrumentChanges = Promise.resolve()
   const instrumentError = ref('')
   const extraFontLoading = ref(false)
   const canRetrySoundFont = computed(() => !extraFontLoading.value && soundFontState.value !== 'loading'
@@ -125,17 +128,7 @@ export function useScorePlayer(props) {
     configureScoreScroll(instance, module, followScroll.value, window.innerHeight)
     instance.playbackSpeed = speed.value
     instance.masterVolume = volume.value
-    soundFonts = createSoundFontLoader(instance, undefined, () => {
-      const time = instance.timePosition
-      const playing = isPlaying.value
-      return () => {
-        instance.timePosition = time
-        if (playing) instance.play()
-        // Worker state events arrive later; the next MIDI change needs the restored intent now.
-        position.value = time
-        isPlaying.value = playing
-      }
-    })
+    soundFonts = createSoundFontLoader(instance)
 
     // alphaTab 的事件并非都在 AlphaTabApi 上（例如 soundFontLoadFailed 只在内部的 AlphaSynth
     // 上有，API 实例上是 undefined）。逐个硬订阅会让一个缺失的事件把整个组件打挂，
@@ -149,13 +142,14 @@ export function useScorePlayer(props) {
       applyScoreInstrument(instance.score.tracks[0], program.value, module)
       if (INSTRUMENTS.find(item => item.program === program.value)?.soundFont !== props.soundFont) void selectInstrument(program.value)
     })
-    // midiLoad 在 tickCache 已生成、MIDI 交给合成器前触发。
-    // 1.8.4 的 midiLoaded 订阅会读取递归的 loadedMidiInfo getter，使用 midiLoad 避开它。
+    // midiLoad 在 tickCache 已生成、MIDI 交给合成器前触发，供谱面高亮建立索引。
+    // 切换音色另用 player.midiLoaded 等待合成器确认完成加载。
     subscribe(instance.midiLoad, () => {
       scoreIndex = createScoreIndex(instance)
       updateHighlightValidity()
     })
     subscribe(instance.playerStateChanged, (args) => {
+      if (instrumentPlayback) return
       // PlayerState 不在 alphaTab 顶层导出，它在 synth 命名空间下。
       isPlaying.value = args.state === module.synth.PlayerState.Playing
     })
@@ -163,6 +157,7 @@ export function useScorePlayer(props) {
       loaded.value = true
     })
     subscribe(instance.playerPositionChanged, (args) => {
+      if (instrumentPlayback) return
       position.value = args.currentTime
       duration.value = args.endTime
       if (highlightOk.value) activeIndex.value = scoreIndex.indexAt(args.currentTick)
@@ -228,6 +223,7 @@ export function useScorePlayer(props) {
   onBeforeUnmount(() => {
     disposed = true
     soundFonts?.dispose()
+    playbackAbort.abort()
     layoutAbort.abort()
     observer?.disconnect()
     themeObserver?.disconnect()
@@ -269,18 +265,41 @@ export function useScorePlayer(props) {
     instrumentError.value = ''
     const instrument = INSTRUMENTS.find(item => item.program === value)
     const isCurrent = () => !disposed && request === instrumentRequest
+    // Pause once for the entire change, including consecutive selections. Loading a font
+    // pauses AlphaSynth too; resuming there would race its asynchronous AudioWorklet startup
+    // with the subsequent MIDI reload/stop. Only the final selection resumes playback.
+    if (!instrumentPlayback) {
+      instrumentPlayback = { position: position.value, playing: isPlaying.value }
+      api.value.pause()
+    }
     try {
       extraFontLoading.value = true
       await loadBaseSoundFont()
       if (!isCurrent()) return
       if (instrument?.soundFont) await soundFonts.ensure(withBase(instrument.soundFont))
-      if (isCurrent()) changeScoreInstrument(api.value, value, alphaTab,
-        { position: position.value, playing: isPlaying.value })
+      // Keep notifications suppressed until the Worker has acknowledged MIDI, seek and play.
+      // Serialized changes cannot mistake an earlier MIDI acknowledgement for their own.
+      if (isCurrent()) {
+        instrumentChanges = instrumentChanges.catch(() => {}).then(() => {
+          if (isCurrent()) return changeScoreInstrument(api.value, value, alphaTab,
+            instrumentPlayback, isCurrent, playbackAbort.signal)
+        })
+        await instrumentChanges
+      }
     } catch (error) {
       if (!isCurrent()) return
       instrumentError.value = `音源加载失败：${error.message}；请重新加载或选择其他音色`
+      if (instrumentPlayback.tick !== undefined) api.value.tickPosition = instrumentPlayback.tick
+      else api.value.timePosition = instrumentPlayback.position
+      if (instrumentPlayback.playing) api.value.play()
     } finally {
-      if (isCurrent()) extraFontLoading.value = false
+      if (isCurrent()) {
+        // Includes a note/tick seek requested while changing instruments, even when paused.
+        position.value = api.value.timePosition
+        isPlaying.value = instrumentPlayback.playing
+        instrumentPlayback = null
+        extraFontLoading.value = false
+      }
     }
   }
   watch(program, selectInstrument)
@@ -291,14 +310,34 @@ export function useScorePlayer(props) {
     configureScoreScroll(api.value, alphaTab, value, window.innerHeight)
   })
 
-  const togglePlay = () => api.value?.playPause()
+  const togglePlay = () => {
+    if (instrumentPlayback) {
+      instrumentPlayback.playing = !instrumentPlayback.playing
+      isPlaying.value = instrumentPlayback.playing
+    } else if (soundFontState.value !== 'ready' && api.value?.score?.tracks?.length) {
+      // Rendering can finish before the initial font. Keep the first play request
+      // instead of letting that installation silently pause it.
+      isPlaying.value = true
+      void selectInstrument(program.value)
+    } else if (api.value) {
+      // Publish intent before the Worker's acknowledgement so an immediate instrument
+      // selection cannot capture the old paused state and cancel the play request.
+      isPlaying.value = !isPlaying.value
+      if (isPlaying.value) api.value.play()
+      else api.value.pause()
+    }
+  }
 
   /** 悬浮面板的前进/后退：按毫秒平移播放位置，两端做边界限制。 */
   const seekBy = (delta) => {
     const instance = api.value
     if (!instance || !duration.value) return
     const next = Math.max(0, Math.min(duration.value, position.value + delta))
-    instance.timePosition = next
+    if (instrumentPlayback) {
+      instrumentPlayback.position = next
+      delete instrumentPlayback.tick
+    }
+    else instance.timePosition = next
     position.value = next // 立即回显，不等位置事件
   }
 
@@ -308,7 +347,8 @@ export function useScorePlayer(props) {
     if (!instance || !loaded.value || !highlightOk.value) return
     const tick = scoreIndex?.tickAt(index)
     if (tick === undefined) return
-    instance.tickPosition = tick
+    if (instrumentPlayback) instrumentPlayback.tick = tick
+    else instance.tickPosition = tick
     // seek 不会触发位置事件，这里直接落位，避免"跳了但高亮不动"。
     activeIndex.value = index
   }
@@ -316,7 +356,11 @@ export function useScorePlayer(props) {
   const onSeek = (target) => {
     if (!api.value || !duration.value) return
     const value = Math.max(0, Math.min(duration.value, Number(target)))
-    api.value.timePosition = value
+    if (instrumentPlayback) {
+      instrumentPlayback.position = value
+      delete instrumentPlayback.tick
+    }
+    else api.value.timePosition = value
     position.value = value
   }
 

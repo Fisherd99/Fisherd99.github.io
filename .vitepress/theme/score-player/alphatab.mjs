@@ -51,15 +51,54 @@ export function applyScoreInstrument(track, gmProgram, module) {
   }
 }
 
-export function changeScoreInstrument(instance, gmProgram, module, playback) {
+function waitForPlayerEvent(event, action, signal, failure, matches = () => true) {
+  return new Promise((resolve, reject) => {
+    let armed = false
+    const cleanup = () => {
+      event.off(done)
+      failure?.off(failed)
+      signal?.removeEventListener('abort', cancelled)
+    }
+    const done = args => { if (armed && matches(args)) { cleanup(); resolve(true) } }
+    const failed = error => { cleanup(); reject(error) }
+    const cancelled = () => { cleanup(); resolve(false) }
+    if (signal?.aborted) { resolve(false); return }
+    event.on(done)
+    failure?.on(failed)
+    signal?.addEventListener('abort', cancelled, { once: true })
+    // alphaTab replays cached state synchronously on subscription; await the new command.
+    armed = true
+    try { action() } catch (error) { failed(error) }
+  })
+}
+
+// Callers serialize MIDI changes and keep their playback snapshot until Worker acknowledgement.
+export async function changeScoreInstrument(instance, gmProgram, module, playback, isCurrent = () => true, signal) {
   const position = playback?.position ?? instance.timePosition
-  const playing = playback?.playing ?? (instance.playerState === module.synth.PlayerState.Playing)
+  const wasPlaying = instance.playerState === module.synth.PlayerState.Playing
   applyScoreInstrument(instance.score.tracks[0], gmProgram, module)
-  // 合成器 Worker 顺序处理 load → seek → play；seek 在加载后的归零之后执行。
-  // 时间来自展开后的播放时间轴，保留反复位置且避免 tick/ms 反复换算舍入。
-  instance.loadMidiForScore()
-  instance.timePosition = position
-  if (playing) instance.play()
+  // The dependency patch repairs 1.8.4's recursive getter used by MIDI subscriptions.
+  if (!await waitForPlayerEvent(instance.player.midiLoaded,
+    () => instance.loadMidiForScore(), signal, instance.player.midiLoadFailed) || !isCurrent()) return
+  let targetTick, targetTime
+  do {
+    targetTick = playback?.tick
+    targetTime = playback?.position ?? position
+    if (!await waitForPlayerEvent(instance.player.positionChanged, () => {
+      if (targetTick !== undefined) instance.tickPosition = targetTick
+      else instance.timePosition = targetTime
+    }, signal, undefined, args => targetTick !== undefined
+      ? Math.abs(args.currentTick - targetTick) <= 1
+      : Math.abs(args.currentTime - targetTime) < 1) || !isCurrent()) return
+  } while (targetTick !== playback?.tick || targetTime !== (playback?.position ?? position))
+  // Read intent again: the user may pause while MIDI is loading or seeking.
+  let playing = false // MIDI reload stops playback.
+  while (isCurrent() && playing !== (playback?.playing ?? wasPlaying)) {
+    playing = playback?.playing ?? wasPlaying
+    if (!await waitForPlayerEvent(instance.player.stateChanged,
+      () => playing ? instance.play() : instance.pause(), signal, undefined,
+      args => args.state === (playing ? module.synth.PlayerState.Playing : module.synth.PlayerState.Paused))) return
+  }
 }
 
 /** 写谱音序与含反复的播放时间轴之间的索引。 */
@@ -157,6 +196,8 @@ export function createScoreSettings(module, props, dark) {
   settings.core.fontDirectory = props.fontDirectory
   applyThemeColors(module, settings, dark)
   settings.player.playerMode = module.PlayerMode.EnabledSynthesizer
+  // scripts/patch-alphatab.mjs guards alphaTab 1.8.4's asynchronous start/pause lifecycle.
+  settings.player.outputMode = module.PlayerOutputMode.WebAudioAudioWorklets
   settings.player.soundFont = '' // Downloads and installation belong to soundfonts.mjs.
   settings.player.enableCursor = true
   settings.player.enableAnimatedBeatCursor = true

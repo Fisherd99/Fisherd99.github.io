@@ -6,6 +6,7 @@ import * as alphaTab from '@coderline/alphatab'
 import { INSTRUMENTS, configureScoreScroll, applyScoreInstrument, changeScoreInstrument, createScoreIndex, indexScoreLayout, guardScoreUiEvents } from '../.vitepress/theme/score-player/alphatab.mjs'
 import { groupJianpuPrintRows, findJianpuPrintRow } from '../.vitepress/theme/score-player/jianpu-print.mjs'
 import soundFontHashes from '../.vitepress/generated/soundfont-hashes.mjs'
+import { createSoundFontLoader } from '../.vitepress/theme/score-player/soundfonts.mjs'
 import { parseScoreText, parsePitchToken, durationOf, tokenize, buildMeasures, buildDisplay, toMusicXml } from './score-utils.mjs'
 
 function loadScore(settings = new alphaTab.Settings()) {
@@ -53,26 +54,39 @@ test('简谱打印将不同高度的音符和反复符号归入同一行，下�
   assert.equal(findJianpuPrintRow(rows, 94), rows[0])
 })
 
-test('切换音色保留反复内播放 tick 和播放/暂停状态，连续切换也遵循加载→定位→播放顺序', () => {
+test('切换音色保留反复内播放 tick 和播放/暂停状态，安装期间不启动音频输出', async () => {
+  let starts = 0
   const output = {
     sampleRate: 44100,
     ready: { on() {} }, sampleRequest: { on() {} }, samplesPlayed: { on() {} },
-    open() {}, pause() {}, play() {}, activate() {}, resetSamples() {}
+    open() {}, pause() {}, play() { starts++ }, activate() {}, resetSamples() {}
   }
   const synth = new alphaTab.synth.AlphaSynth(output, 100)
   const settings = new alphaTab.Settings()
   const score = loadScore(settings)
   const queue = []
   const instance = {
-    score,
+    score, player: synth,
     get timePosition() { return synth.timePosition },
     set timePosition(position) { queue.push(() => { synth.timePosition = position }) },
+    set tickPosition(tick) { queue.push(() => { synth.tickPosition = tick }) },
     get playerState() { return synth.state },
     loadMidiForScore() {
       const midi = makeMidi(score, settings)
       queue.push(() => synth.loadMidiFile(midi))
     },
-    play() { queue.push(() => synth.play()) }
+    play() { queue.push(() => synth.play()) },
+    pause() { queue.push(() => synth.pause()) }
+  }
+  async function acknowledged(change) {
+    let settled = false
+    const result = change.finally(() => { settled = true })
+    for (let turn = 0; !settled && turn < 100; turn++) {
+      while (queue.length) queue.shift()()
+      await new Promise(resolve => setImmediate(resolve))
+    }
+    assert.ok(settled, 'Worker acknowledgement must complete the instrument change')
+    await result
   }
   synth.loadMidiFile(makeMidi(score, settings))
   for (const playing of [false, true]) {
@@ -80,8 +94,7 @@ test('切换音色保留反复内播放 tick 和播放/暂停状态，连续切�
     const originalTick = synth.tickPosition
     const originalTime = synth.timePosition
     if (playing) synth.play()
-    for (const program of [1, 74, 23]) changeScoreInstrument(instance, program, alphaTab)
-    while (queue.length) queue.shift()()
+    for (const program of [1, 74, 23]) await acknowledged(changeScoreInstrument(instance, program, alphaTab))
     assert.equal(synth.tickPosition, originalTick)
     assert.equal(synth.timePosition, originalTime)
     assert.equal(synth.state, playing ? alphaTab.synth.PlayerState.Playing : alphaTab.synth.PlayerState.Paused)
@@ -91,10 +104,40 @@ test('切换音色保留反复内播放 tick 和播放/暂停状态，连续切�
   // Preserve the explicit playback intent even while the API still reports Paused.
   const playback = { position: synth.timePosition, playing: true }
   synth.pause()
-  changeScoreInstrument(instance, 25, alphaTab, playback)
-  while (queue.length) queue.shift()()
+  await acknowledged(changeScoreInstrument(instance, 25, alphaTab, playback))
   assert.equal(synth.timePosition, playback.position)
   assert.equal(synth.state, alphaTab.synth.PlayerState.Playing)
+
+  synth.playbackSpeed = 1.25
+  const saved = { position: synth.timePosition, playing: true, tick: 81000 }
+  synth.pause()
+  const bytes = fs.readFileSync(new URL('../public/alphatab/soundfont/sonivox-1.sf2', import.meta.url))
+  const fonts = createSoundFontLoader({
+    soundFontLoaded: synth.soundFontLoaded, player: synth,
+    loadSoundFont(data, append) { synth.loadSoundFont(data, append) }
+  }, async () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength))
+  const before = starts
+  await fonts.ensure('/piano')
+  assert.equal(starts, before, '加载完成不得中途启动 AudioWorklet')
+  await acknowledged(changeScoreInstrument(instance, 1, alphaTab, saved))
+  assert.equal(starts, before + 1, '整次切换仅在最终恢复时启动一次')
+  assert.equal(synth.timePosition, synth.sequencer.mainTickPositionToTimePosition(saved.tick))
+  assert.equal(synth.playbackSpeed, 1.25)
+  const play = instance.play
+  instance.play = () => { play(); saved.playing = false }
+  await acknowledged(changeScoreInstrument(instance, 23, alphaTab, saved))
+  assert.equal(synth.state, alphaTab.synth.PlayerState.Paused, '恢复播放确认前按暂停仍应最终暂停')
+  instance.play = play
+  saved.playing = true
+  const superseded = starts
+  await acknowledged(changeScoreInstrument(instance, 23, alphaTab, saved, () => false))
+  assert.equal(starts, superseded, '旧选择收到 MIDI 确认后不能恢复播放')
+  const abort = new AbortController()
+  const cancelled = changeScoreInstrument(instance, 1, alphaTab, saved, () => true, abort.signal)
+  abort.abort()
+  await acknowledged(cancelled)
+  assert.equal(starts, superseded, '卸载取消确认等待，不留下后续播放')
+  fonts.dispose()
 })
 
 test('简谱索引覆盖所有音符和休止，反复中的高亮映射回写谱音序', () => {
