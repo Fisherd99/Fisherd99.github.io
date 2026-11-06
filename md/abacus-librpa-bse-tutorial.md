@@ -86,6 +86,7 @@ cmake -B build -DLIBRPA_USE_LIBRI=ON \
 | `rpa` | 输出第一节中所列举的其他所有文件 | 1 | 0 |
 | `rpa_out_vel` | 输出速度矩阵 | 1 | 0 |
 | `rpa_outdir` | 输出LibRPA所需文件的目录 | `OUT.librpa` | `OUT.librpa` |
+| `rpa_cut_coulomb` | 截断库仑的形式 | `log_erfc` | `hard` |
 | `out_mat_xc` | 输出`vxc_out.dat`，后续会复制为`vxc_out` | 1 | 0 |
 | `exx_singularity_correction` | 设置为`massidda`后会计算`coulomb_mat_{rank}.txt`，它对库伦积分做截断的方式更完整 | `massidda` | `default` |
 | `exx_pca_threshold` | 设为10会跳过默认的辅助基构造，直接读取`.abfs`文件中预设的辅助基 | 10 | 1e-4 |
@@ -119,7 +120,7 @@ cmake -B build -DLIBRPA_USE_LIBRI=ON \
 | `replace_w_head` | 使用宏观介电函数修正介电矩阵的head；本例配合`option_dielect_func = 3`使用 | `t` | `f` |
 | `parallel_routing` | LibRPA内部数据和任务的并行路由方式 | `libri` | `auto` |
 | `use_shrink_abfs` | 在计算介电函数$\varepsilon$时使用压缩后的小辅助基 | `t` | `f` |
-| `use_shrink_chi` | 设为t时，计算响应函数$\chi$会先使用初始辅助基，然后转到压缩后的小辅助基。设为f时，直接使用小辅助基计算$\chi$ | `f` | `t` |
+| `use_shrink_chi` | 设为t时，计算响应函数$\chi$会先使用初始辅助基，然后转到压缩后的小辅助基。设为f时，直接使用小辅助基计算$\chi$ | `t` | `t` |
 | `input_dir` | 读取ABACUS及预处理结果的目录 | `OUT.librpa` | `./` |
 | `output_dir` | LibRPA矩阵文件的输出目录 | `librpa.d` | `librpa.d` |
 | `output_wc_rf` | 输出辅助基下的静态屏蔽库伦矩阵$W_{\mu\nu}(R,i\omega)$ | `t` | `f` |
