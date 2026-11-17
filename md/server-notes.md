@@ -22,16 +22,16 @@ description: 关于配置服务器的一些记录
 
 因课题组内服务器不能满足个人需求，最近攒了台小服务器作为个人学习使用。
 
-| 配件  | 规格                           | 价格(扣除优惠券) | 链接                                                | 备注       |
+| 配件  | 规格                       | 价格(扣除优惠券) | 链接                                         | 备注     |
 | --- | ---------------------------- | --------- | ------------------------------------------------- | -------- |
 | CPU | Xeon Platinum 8260 × 2       | 550 × 2   | https://item.taobao.com/item.htm?id=852556787651  |          |
-| 主板  | 华硕Z11PR-D16                  | 1435.7    | https://item.taobao.com/item.htm?id=904033503394  |          |
-| 内存  | 三星ddr4 64G ECC 2666MHz × 6   | +固态合计7150 |                                                   | 含税  |
+| 主板  | 华硕Z11PR-D16                  | 1435.7    | https://item.taobao.com/item.htm?id=904033503394  |       |
+| 内存  | 三星ddr4 64G ECC 2666MHz × 6   | +固态合计7150 |                                                | 含税  |
 | 固态  | 致态TiPlus7100 2T              |           |                                                   |          |
 | 水冷  | Bykski B-FRDSR-V2 LGA3647 双路 | 862.6     | https://item.taobao.com/item.htm?id=880270522805  | 客服备注3647 |
-| 电源  | 长城猎金电源G11金牌全模组1100W          | 630.85    | https://detail.tmall.com/item.htm?id=708933603177 |          |
-| 机箱  | 航嘉GX750C + 3 个风扇             | 315       | 中关村科贸电子城4B173                                     |          |
-| 总计  |                              | 11494.15  |                                                   |          |
+| 电源  | 长城猎金电源G11金牌全模组1100W  | 630.85    | https://detail.tmall.com/item.htm?id=708933603177 |        |
+| 机箱  | 航嘉GX750C + 3 个风扇         | 315       | 中关村科贸电子城4B173                    |          |
+| 总计  |                              | 11494.15  |                                                   |         |
 
 在同学的推荐下购置了华硕Z11PR-D16主板，它所搭载的AST2500芯片内置了ASMB9-iKVM，可以提供IPMI（智能平台管理接口，这好像是微星的叫法，华硕的叫法是BMC控制器）。将网线连上主板（注意不要连到iKVM的专属接口），另一边连到路由器上，这样同一个局域网的设备就可以通过路由器分配的ip地址访问IPMI，实现远程操控、更新BIOS等功能。
 
@@ -217,6 +217,22 @@ alias sst='sstat --format=JobID,MaxVMSize,MaxVMSizeNode,MaxVMSizeTask,AveVMSize,
 MaxRSS,MaxRSSNode,MaxRSSTask,AveRSS' # must followed by -j jobid
 alias sac7='sacct -u $USER -S now-7days -X \
  --format=JobID,JobName%24,Partition,State,ExitCode,Elapsed,Submit,Start,End -n'
+
+susage() {
+    sacct -a -S "${1:-1970-01-01}" -X -n -P \
+        --format=User,ElapsedRaw,CPUTimeRAW |
+    awk -F'|' '
+    NF >= 3 && $1 != "" {
+        jobs[$1]++
+        elapsed[$1]+=$2
+        cpu[$1]+=$3
+    }
+    END {
+        printf "%-16s %8s %12s %14s\n", "USER", "JOBS", "RUN_HOURS", "CPU_CORE_HOURS"
+        for (u in jobs)
+            printf "%-16s %8d %12.2f %14.2f\n", u, jobs[u], elapsed[u]/3600, cpu[u]/3600
+    }'
+}
 ```
 ## 安装开发工具
 ### Conda
@@ -282,17 +298,19 @@ echo "finish loading intelOneAPI module"
 EOF
 sudo chmod 644 /etc/profile.d/oneapi-modules.sh
 ```
-vscode的终端默认是非登录Shell，不会自动加载/profile.d路径下的文件，需要在.bashrc中加入
+vscode的终端默认是非登录Shell，不会自动加载/profile.d路径下的文件。已经在`/etc/bash.bashrc`中添加以下内容来确保自动加载
 ```shell
-# Ensure /etc/profile.d/ scripts are loaded in non-login shells
-if [ -d /etc/profile.d ]; then
+# Load shared environment scripts for non-login interactive Bash shells.
+if ! shopt -q login_shell; then
     for script in /etc/profile.d/*.sh; do
         if [ -r "$script" ]; then
-            source "$script"
+            . "$script"
         fi
     done
+    unset script
 fi
 ```
+这个脚本会加载/etc/profile.d/目录下的所有.sh文件，目前已经添加了`oneapi-modules.sh`, `conda.sh`, `clash.sh`等文件，用户可自行查看具体脚本。
 ### ELPA
 由 https://gitlab.mpcdf.mpg.de/elpa/elpa.git 下载 ELPA 源代码。需要先运行一个.sh文件，才会生成configure文件。安装手册[https://gitlab.mpcdf.mpg.de/elpa/elpa/-/blob/master/documentation/INSTALL.md](https://gitlab.mpcdf.mpg.de/elpa/elpa/-/blob/master/documentation/INSTALL.md)
 ```shell
